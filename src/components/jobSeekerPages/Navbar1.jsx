@@ -34,7 +34,7 @@ const Navbar1 = () => {
   const handleLogout = () => {
     localStorage.removeItem("user");
     setIsLoggedIn(false);
-    navigate("/"); // go back to home
+    navigate("/"); // ✅ redirect to home
   };
 
   // Close dropdown if clicked outside
@@ -54,7 +54,6 @@ const Navbar1 = () => {
     { label: "Notifications", href: "/notifications" },
   ];
 
-  // Dummy profile picture (replace with actual from user data)
   const profilePicture =
     "https://ui-avatars.com/api/?name=User&background=random";
 
@@ -80,9 +79,9 @@ const Navbar1 = () => {
             </Link>
           ))}
 
+          {/* ✅ If logged in → show dropdown */}
           {isLoggedIn ? (
             <div className="relative" ref={dropdownRef}>
-              {/* Profile Picture Circle */}
               <img
                 src={profilePicture}
                 alt="Profile"
@@ -90,7 +89,6 @@ const Navbar1 = () => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               />
 
-              {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-lg shadow-lg border dark:border-gray-700 z-50">
                   <Link
@@ -124,7 +122,21 @@ const Navbar1 = () => {
               )}
             </div>
           ) : (
-            <h1>no dropdown is there</h1>
+            // ✅ If NOT logged in → show Sign In / Sign Up
+            <div className="flex items-center gap-4">
+              <Link
+                to="/signin"
+                className="hover:underline dark:text-gray-300"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="px-4 py-2 border rounded-full dark:text-white dark:border-white"
+              >
+                Sign Up
+              </Link>
+            </div>
           )}
 
           {/* Dark mode toggle */}
@@ -215,7 +227,7 @@ const Navbar1 = () => {
             </>
           ) : (
             <>
-              <Link
+             <Link
                 to="/signin"
                 className="hover:underline dark:text-gray-300"
                 onClick={() => setMenuOpen(false)}
@@ -224,7 +236,7 @@ const Navbar1 = () => {
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 border rounded-full dark:text-white dark:border-white"
+                className="px-4 py-2 border border-[1px solid to-black-100] rounded-full dark:text-white dark:border-white"
                 onClick={() => setMenuOpen(false)}
               >
                 Sign Up

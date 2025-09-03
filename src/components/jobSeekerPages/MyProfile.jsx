@@ -99,6 +99,7 @@ const MyProfile = () => {
   };
 
   return (
+    <div className="max-w-full mx-auto px-4 py-6 dark:bg-black-100">
     <div className="max-w-6xl mx-auto mt-6 bg-white dark:bg-black-100 shadow-lg rounded-xl overflow-hidden">
       {/* Cover & Profile Header */}
       <div className="relative">
@@ -203,7 +204,7 @@ const MyProfile = () => {
                   <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                     <h4 className="font-bold text-lg text-gray-800 dark:text-white">{exp.role}</h4>
                     <p className="text-blue-600 dark:text-blue-400 font-medium">{exp.company}</p>
-                    <span className="inline-block px-2 py-1 mt-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                    <span className="inline-block px-2 py-1 mt-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white rounded">
                       {exp.year}
                     </span>
                     {exp.description && (
@@ -286,7 +287,7 @@ const MyProfile = () => {
               {profile.skills.map((skill, idx) => (
                 <span 
                   key={idx} 
-                  className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium"
+                  className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white rounded-full text-sm font-medium"
                 >
                   {skill}
                 </span>
@@ -367,6 +368,7 @@ const MyProfile = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
