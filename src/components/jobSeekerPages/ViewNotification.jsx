@@ -159,7 +159,7 @@ const ViewNotification = () => {
   if (!notification) {
     return (
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mt-12 mx-auto px-4 py-8">
         <div className="text-center">
           <svg className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -179,7 +179,7 @@ const ViewNotification = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto px-4 py-6 dark:bg-black-100">
+    <div className="max-w-full mx-auto mt-12 px-4 py-6 dark:bg-black-100">
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

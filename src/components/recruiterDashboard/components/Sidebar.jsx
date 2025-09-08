@@ -5,6 +5,8 @@ import {
   Users, 
   FileText, 
   ClipboardList,
+  User2Icon,
+  Sheet,
   Settings,
   LogOut,
   X
@@ -16,7 +18,8 @@ const menuItems = [
   { id: 'jobs', label: 'Job Management', icon: Briefcase, path: '/recruiter/jobs' },
   { id: 'applications', label: 'Applications', icon: Users, path: '/recruiter/applications' },
   { id: 'exams', label: 'Exams & Interviews', icon: ClipboardList, path: '/recruiter/exams' },
-  { id: 'profile', label: 'Profile', icon: Settings, path: '/recruiter/profile' },
+  { id: 'profile', label: 'Profile', icon: User2Icon, path: '/recruiter/profile' },
+  { id: 'reports', label: 'Reports', icon: Sheet, path: '/recruiter/reports' },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {

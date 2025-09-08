@@ -44,7 +44,7 @@ const Hero = () => {
 
   return (
     <div
-      className="hero-section"
+      className="hero-section "
       style={{
         background: "linear-gradient(to bottom, #b3f0ff, #74d9f7)",
         backgroundImage: `
@@ -62,6 +62,7 @@ const Hero = () => {
         padding: "2rem",
         position: "relative",
         overflow: "hidden",
+        
       }}
     >
       <div className="hero-content slide-fade">

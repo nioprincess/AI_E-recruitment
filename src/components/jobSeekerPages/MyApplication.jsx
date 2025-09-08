@@ -114,17 +114,17 @@ const Applications = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto px-4 py-6 dark:bg-black-100">
+    <div className="max-w-screen-lg mx-auto px-4 py-6 mt-12 dark:bg-black-100">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">My Applications</h1>
-        <div className="flex space-x-2">
+        {/* <div className="flex space-x-2">
           <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
             Filter
           </button>
           <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
             Sort
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow overflow-hidden">

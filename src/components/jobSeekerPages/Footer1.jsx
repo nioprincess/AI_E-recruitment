@@ -8,10 +8,13 @@ const Footer = () => {
         <div>
           <h3 className="text-lg font-semibold mb-4">Platform</h3>
           <ul>
+            {/* this is job seekers footer */}
             <li className="text-sm mb-2"><a href="#">Browse Jobs</a></li>
-            <li className="text-sm mb-2"><a href="#">Post a Job</a></li>
-            <li className="text-sm mb-2"><a href="#">Find Candidates</a></li>
-            <li className="text-sm mb-2"><a href="#">Recruiter Dashboard</a></li>
+            <li className="text-sm mb-2"><a href="#">Create Profile</a></li>
+            <li className="text-sm mb-2"><a href="#">Job Alerts</a></li>
+            <li className="text-sm mb-2"><a href="#">Career Resources</a></li>
+            <li className="text-sm mb-2"><a href="#">attend exams</a></li>
+            
           </ul>
         </div>
 
@@ -21,7 +24,6 @@ const Footer = () => {
             <li className="text-sm mb-2"><a href="#">About Us</a></li>
             <li className="text-sm mb-2"><a href="#">Careers</a></li>
             <li className="text-sm mb-2"><a href="#">Blog</a></li>
-            <li className="text-sm mb-2"><a href="#">Press</a></li>
             <li className="text-sm mb-2"><a href="#">Contact</a></li>
           </ul>
         </div>

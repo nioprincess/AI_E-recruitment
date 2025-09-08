@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Menu, Bell, Search, Sun, Moon, ChevronDown, LogOut, User, Settings } from 'lucide-react';
-import { useTheme } from '../components/ThemeContext';
-import { Button } from '../ui/button';
+import { Menu, Bell, Search, Sun, Moon, ChevronDown, LogOut, User, Slack, Settings } from 'lucide-react';
 
-const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
+import { useTheme } from '../../../components/recruiterDashboard/components/ThemeContext';
+import { Button } from '../../recruiterDashboard/ui/button';
+
+const Navbar = ({ onMenuToggle, isSidebarOpen }) => {
   const { theme, toggleTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -24,9 +25,9 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
         {/* Logo for mobile */}
         <div className="lg:hidden flex items-center space-x-2">
           <div className="w-18 h-8 rounded-lg bg-gradient-to-br  from-blue-500 to-blue-600 flex items-center justify-center">
-            <span className="text-white w-full font-bold text-sm">HireTrust</span>
+            <span className="text-white w-full font-bold text-sm"><Slack /> </span>
           </div>
-          <span className="text-lg font-bold text-foreground dark:text-white">Recruiter</span>
+          <span className="text-lg font-bold text-foreground dark:text-white">Admin </span>
         </div>
         
         {/* Search Bar */}
@@ -34,7 +35,7 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-gray-400 h-4 w-4" />
           <input
             type="text"
-            placeholder="Search jobs, candidates..."
+            placeholder="Search Here..."
             className="pl-10 pr-4 py-2 w-80 border border-input dark:border-gray-600 rounded-lg bg-background dark:bg-gray-800 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
           />
         </div>
@@ -95,7 +96,7 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
 
           {/* Profile Dropdown Menu */}
           {isProfileOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-card dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg shadow-lg py-2 z-50 backdrop-blur-sm">
+            <div className="absolute right-0 top-full mt-2 w-56 bg-card dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg shadow-lg py-2 z-50 bg-white  backdrop-blur-sm">
               {/* User Info */}
               <div className="px-4 py-3 border-b border-border dark:border-gray-700">
                 <p className="text-sm font-medium text-foreground dark:text-white">John Doe</p>
@@ -104,12 +105,12 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
               
               {/* Menu Items */}
               <div className="py-1">
-                <button className="w-full flex items-center space-x-3 px-4 py-2 text-foreground dark:text-white hover:bg-accent dark:hover:bg-gray-700 transition-colors">
+                <button className="w-full flex hover:bg-blue-100  items-center space-x-3 px-4 py-2 text-foreground dark:text-white hover:bg-accent dark:hover:bg-gray-700 transition-colors">
                   <User className="h-4 w-4" />
                   <span className="text-sm">My Profile</span>
                 </button>
                 
-                <button className="w-full flex items-center space-x-3 px-4 py-2 text-foreground dark:text-white hover:bg-accent dark:hover:bg-gray-700 transition-colors">
+                <button className="w-full hover:bg-blue-100  flex items-center space-x-3 px-4 py-2 text-foreground dark:text-white hover:bg-accent dark:hover:bg-gray-700 transition-colors">
                   <Settings className="h-4 w-4" />
                   <span className="text-sm">Settings</span>
                 </button>
@@ -120,7 +121,7 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
               
               {/* Sign Out */}
               <div className="py-1">
-                <button className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                <button className="w-full hover:bg-red-300  flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                   <LogOut className="h-4 w-4" />
                   <span className="text-sm">Sign Out</span>
                 </button>
@@ -141,4 +142,4 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
   );
 };
 
-export default Topbar;
+export default Navbar;

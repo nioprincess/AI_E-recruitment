@@ -281,7 +281,7 @@ const ApplicationsPage = () => {
           <Button 
             variant="outline" 
             onClick={() => toggleSelectAllVisible()}
-            className="border-gray-300 dark:border-gray-600"
+            className="border-gray-300 dark:border-gray-600 dark:text-white"
           >
             <CheckCircle2 className="h-4 w-4 mr-2" />
             {selectedIds.size > 0 ? "Deselect All" : "Select All"}
@@ -315,6 +315,23 @@ const ApplicationsPage = () => {
         </div>
       </div>
 
+{/* useEffect(()=>{},[selectedJob])
+useEffect(()=>{
+if(selectedJob=="All"){}
+},[selectedJob])
+Impano
+19:44
+const[selectActive, setSelectActive]=useState(false)
+useEffect(()=>{
+if(selectedJob!!="All"){
+setSelectActive(false)
+
+}else{
+setSelectActive(true);
+}
+},[selectedJob])
+
+<button disabled={selectActive>Select All</button>}}*/}
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
         <div className="flex flex-col md:flex-row gap-4">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import Footer from './Footer';
 
 const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,6 +20,7 @@ const DashboardLayout = ({ children }) => {
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 bg-blue-50 dark:bg-gray-900">
           {children}
         </main>
+        <Footer />
       </div>
     </div>
   );

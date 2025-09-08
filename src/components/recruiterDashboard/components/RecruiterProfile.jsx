@@ -83,12 +83,13 @@ const RecruiterProfile = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 ">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-foreground dark:text-white">
           Recruiter Profile
         </h1>
+        
         <Button
           className="bg-blue-600 hover:bg-blue-500 text-white"
           onClick={() => setIsEditing(true)}

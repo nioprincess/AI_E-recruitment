@@ -49,7 +49,7 @@ const Navbar1 = () => {
   }, []);
 
   const menuItems = [
-    { label: "Explore Opportunities", href: "/jobs" },
+    { label: "Explore Opportunities", href: "/jobs-for-you" },
     { label: "My Applications", href: "/my-applications" },
     { label: "Notifications", href: "/notifications" },
   ];
@@ -58,7 +58,7 @@ const Navbar1 = () => {
     "https://ui-avatars.com/api/?name=User&background=random";
 
   return (
-    <nav className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md">
+    <nav className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md fixed w-full z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <div className="text-2xl font-bold">
@@ -132,7 +132,7 @@ const Navbar1 = () => {
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 border rounded-full dark:text-white dark:border-white"
+                className="px-4 py-2 border bg-blue-100 rounded-full dark:text-white dark:border-white"
               >
                 Sign Up
               </Link>

@@ -99,7 +99,7 @@ const MyProfile = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto px-4 py-6 dark:bg-black-100">
+    <div className="max-w-full mt-12 mx-auto px-4 py-6 dark:bg-black-100">
     <div className="max-w-6xl mx-auto mt-6 bg-white dark:bg-black-100 shadow-lg rounded-xl overflow-hidden">
       {/* Cover & Profile Header */}
       <div className="relative">
@@ -151,9 +151,9 @@ const MyProfile = () => {
             </svg>
             Edit Profile
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow transition">
+          {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow transition">
             Download CV
-          </button>
+          </button> */}
         </div>
       </div>
 

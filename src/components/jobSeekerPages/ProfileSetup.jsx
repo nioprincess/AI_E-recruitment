@@ -107,7 +107,7 @@ const ProfileSetup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black-100 flex justify-center items-center px-4 py-10">
+    <div className="min-h-screen mt-12 bg-white dark:bg-black-100 flex justify-center items-center px-4 py-10">
       <form
         onSubmit={handleSubmit}
         className="bg-gray-50 dark:bg-gray-900 p-8 rounded-2xl w-full max-w-4xl shadow-lg space-y-8"

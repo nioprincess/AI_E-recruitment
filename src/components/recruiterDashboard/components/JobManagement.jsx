@@ -161,17 +161,17 @@ const JobManagement = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
-        <div className="bg-card border border-border border-gray-400 dark:bg-gray-800 dark:border-gray-700 rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
           <p className="text-sm text-muted-foreground  text-gray-600 dark:text-gray-400">Total Jobs</p>
           <p className="text-2xl font-bold text-foreground dark:text-white">{jobs.length}</p>
         </div>
-        <div className="bg-card border border-border border-gray-400 dark:bg-gray-800 dark:border-gray-700 rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
           <p className="text-sm text-muted-foreground  text-gray-600 dark:text-gray-400">Active Jobs</p>
           <p className="text-2xl font-bold text-foreground dark:text-white">
             {jobs.filter((j) => j.status === "active").length}
           </p>
         </div>
-        <div className="bg-card border border-border border-gray-400 dark:bg-gray-800 dark:border-gray-700 rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
           <p className="text-sm text-muted-foreground  text-gray-600 dark:text-gray-400">Applications</p>
           <p className="text-2xl font-bold text-foreground dark:text-white">
             {jobs.reduce((sum, j) => sum + j.applicationCount, 0)}

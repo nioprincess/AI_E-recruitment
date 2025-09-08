@@ -13,7 +13,7 @@ const SignIn = () => {
 localStorage.setItem("user", JSON.stringify({ email: "user@example.com" }));
 navigate("/home");
 
-    navigate('/verify-email');
+    
   };
 
   return (

@@ -26,7 +26,7 @@ const Navbar1 = () => {
   ];
 
   return (
-    <nav className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md fixed w-full z-50">
+    <nav className="bg-white mb-12 dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md fixed w-full z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <div className="text-2xl font-bold">
@@ -59,7 +59,7 @@ const Navbar1 = () => {
           {/* Sign In */}
           <a
             href="/signin"
-            className="px-4 py-2 bg-white text-black font-semibold dark:text-gray-900 rounded-full text-sm hover:opacity-90 transition"
+            className="px-4 py-2 bg-blue-300 dark:bg-white text-black font-semibold dark:text-gray-900 rounded-full text-sm hover:opacity-90 transition"
           >
             Sign In
           </a>
