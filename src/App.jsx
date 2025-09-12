@@ -7,6 +7,7 @@ import Footer from "./components/dashboard/landingPages/Footer";
 import Employer from "./components/dashboard/landingPages/employer";
 import AboutUs from "./components/dashboard/landingPages/AboutUs";
 import LandingNavbar from "./components/dashboard/landingPages/NavBar1";
+import ContactUs from "./components/dashboard/landingPages/Contact_us";
 
 // Auth Pages
 import SignIn from "./components/dashboard/auth/SignIn";
@@ -66,7 +67,9 @@ const FullLandingPage = () => (
     <Jobs />
     <Employer />
     <AboutUs />
+    <ContactUs />
     <Footer />
+    
     
   </>
 );
@@ -114,6 +117,7 @@ const AppRoutes = () => {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/employer" element={<Employer />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact_us" element={<ContactUs />} />
 
         {/* Job Seeker Routes */}
         <Route path="/home" element={<JobSeekerLayout><JobSeekerHome /></JobSeekerLayout>} />

@@ -2,7 +2,7 @@ import React from 'react';
 
 const AboutUs = () => {
   return (
-    <div className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-16">
+    <div id='about' className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-16">
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
           About Us
@@ -16,21 +16,21 @@ const AboutUs = () => {
         <div className="bg-gradient-to-br from-blue-100 to-cyan-200 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg">
           <h3 className="text-xl font-semibold mb-2">Our Vision</h3>
           <p className="text-sm text-gray-800 dark:text-gray-300">
-            To redefine how hiring works by offering an all-in-one platform that empowers employers and job seekers alike.
+            To redefine hiring by creating a fair, transparent, and innovative platform where employers connect with the right talent and job seekers achieve their full potential.
           </p>
         </div>
 
         <div className="bg-gradient-to-br from-blue-100 to-cyan-200 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg">
           <h3 className="text-xl font-semibold mb-2">What We Offer</h3>
           <p className="text-sm text-gray-800 dark:text-gray-300">
-            From job posting and applicant tracking to interview scheduling — our tools streamline your entire hiring process.
+            From job posting and applicant tracking to interview scheduling, our tools simplify every step of the hiring journey . Whether you’re a recruiter finding the right talent or a jobseeker looking for your next opportunity, we make the process faster, smarter, and more transparent.
           </p>
         </div>
 
         <div className="bg-gradient-to-br from-blue-100 to-cyan-200 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg">
           <h3 className="text-xl font-semibold mb-2">Why Choose Us</h3>
           <p className="text-sm text-gray-800 dark:text-gray-300">
-            Built with simplicity and efficiency in mind, our platform helps you save time, reduce costs, and hire smarter.
+            Built with simplicity and efficiency in mind, our platform helps recruiters save time, reduce costs, and hire smarter while giving jobseekers a fair, accessible, and supportive path to meaningful careers.
           </p>
         </div>
       </div>

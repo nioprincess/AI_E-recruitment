@@ -98,7 +98,7 @@ const ApplicationsPage = () => {
   const [notificationMessage, setNotificationMessage] = useState("Congratulations! You've been shortlisted for the next round. We'll contact you shortly to schedule an interview.");
   const [sendEmailNotification, setSendEmailNotification] = useState(true);
   const [showNotificationSuccess, setShowNotificationSuccess] = useState(false);
-
+  
   // Dropdown states
   const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRefs = useRef({});

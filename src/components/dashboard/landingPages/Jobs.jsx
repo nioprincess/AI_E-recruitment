@@ -77,7 +77,7 @@ const Jobs = () => {
   const visibleJobs = filteredJobs.slice(0, showOnly);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+    <div id='jobs' className="bg-gray-50 dark:bg-gray-900 min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header and Filters */}
         <div className="mb-8">

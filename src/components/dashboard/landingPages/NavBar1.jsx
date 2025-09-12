@@ -23,6 +23,7 @@ const Navbar1 = () => {
     { label: "Explore Opportunities", to: "jobs" },
     { label: "For Employers", to: "employer" },
     { label: "About Us", to: "about" },
+    { label: "Contact Us", to: "contact_us" },
   ];
 
   return (
