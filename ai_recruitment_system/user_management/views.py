@@ -54,7 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = [permissions.AllowAny]
-        elif self.action in ['list', 'retrieve']:
+        elif self.action in ['list', 'retrieve', "logout"]:
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ['check_password_strength']:
             permission_classes = [permissions.AllowAny]
