@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import { Menu, Bell, Search, Sun, Moon, ChevronDown, LogOut, User, Settings } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
 import { Button } from '../ui/button';
+import useUser from '../../../hooks/useUser';
+import { Link } from 'react-router-dom';
 
 const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
   const { theme, toggleTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+   const user= useUser()
+     const profilePicture =
+    `https://ui-avatars.com/api/?name=${user.firstname +" "+user.middlename+ " "+ user.lastname}&background=random`;
+
 
   return (
     <header className="h-16 bg-card border border-b shadow-md dark:border-gray-700 flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
@@ -77,13 +83,18 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
             className="flex items-center space-x-3 p-2 rounded-lg hover:bg-accent dark:hover:bg-gray-700 transition-colors group"
           >
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-foreground dark:text-white text-left">John Doe</p>
-              <p className="text-xs text-muted-foreground dark:text-gray-400">Senior Recruiter</p>
+              <p className="text-sm font-medium text-foreground dark:text-white text-left">{user.firstname} {user?.middlename[0][0]+"." } {user.lastname}</p>
+              <p className="text-xs text-muted-foreground dark:text-gray-400">{user.role}</p>
             </div>
             
             <div className="relative">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:from-blue-600 group-hover:to-blue-700 transition-all duration-200">
-                <span className="text-sm font-medium text-white">JD</span>
+                <img
+                src={profilePicture}
+                alt="Profile"
+                className="w-10 h-10 rounded-full cursor-pointer border-2 border-gray-300"
+               
+              />
               </div>
               <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-card dark:border-gray-800"></div>
             </div>
@@ -98,8 +109,8 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
             <div className="absolute right-0 top-full mt-2 w-56 bg-card dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg shadow-lg py-2 z-50 backdrop-blur-sm">
               {/* User Info */}
               <div className="px-4 py-3 border-b border-border dark:border-gray-700">
-                <p className="text-sm font-medium text-foreground dark:text-white">John Doe</p>
-                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">john.doe@company.com</p>
+                <p className="text-sm font-medium text-foreground dark:text-white">{user.firstname} {user?.middlename[0][0]+"." } {user.lastname}</p>
+                <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">{user.email}</p>
               </div>
               
               {/* Menu Items */}
@@ -120,10 +131,10 @@ const Topbar = ({ onMenuToggle, isSidebarOpen }) => {
               
               {/* Sign Out */}
               <div className="py-1">
-                <button className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                <Link to={"/logout"} className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                   <LogOut className="h-4 w-4" />
                   <span className="text-sm">Sign Out</span>
-                </button>
+                </Link>
               </div>
             </div>
           )}

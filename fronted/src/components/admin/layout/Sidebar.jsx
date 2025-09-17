@@ -100,7 +100,7 @@ const handleNavigation = (path) => {
 
           {/* Logout Button */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button className="
+            <Link to={"/logout"} className="
               w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200
               text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700
               group relative overflow-hidden
@@ -110,7 +110,7 @@ const handleNavigation = (path) => {
               
               {/* Hover effect background */}
               <div className="absolute inset-0 bg-red-500 opacity-0 group-hover:opacity-10 transition-opacity duration-200 rounded-md" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

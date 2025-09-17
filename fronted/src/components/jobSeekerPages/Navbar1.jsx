@@ -6,12 +6,14 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
+import useUser from "../../hooks/useUser";
 
 const Navbar1 = () => {
   const [isDark, setIsDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const user= useUser()
 
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -27,15 +29,11 @@ const Navbar1 = () => {
 
   // Check if user is logged in
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
+     console.log(user)
+    setIsLoggedIn(user.user_id);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    navigate("/"); // ✅ redirect to home
-  };
+ 
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -55,7 +53,7 @@ const Navbar1 = () => {
   ];
 
   const profilePicture =
-    "https://ui-avatars.com/api/?name=User&background=random";
+    `https://ui-avatars.com/api/?name=${user.firstname +" "+user.middlename+ " "+ user.lastname}&background=random`;
 
   return (
     <nav className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md fixed w-full z-50">
@@ -112,12 +110,12 @@ const Navbar1 = () => {
                   >
                     Settings
                   </Link>
-                  <button
-                    onClick={handleLogout}
+                  <Link
+                    to={"/logout"}
                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     Logout
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -218,12 +216,12 @@ const Navbar1 = () => {
               >
                 Settings
               </Link>
-              <button
-                onClick={handleLogout}
+              <Link
+                 to={"/logout"}
                 className="text-red-600 dark:text-red-400"
               >
                 Logout
-              </button>
+              </Link>
             </>
           ) : (
             <>

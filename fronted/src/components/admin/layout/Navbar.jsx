@@ -3,7 +3,7 @@ import { Menu, Bell, Search, Sun, Moon, ChevronDown, LogOut, User, Slack, Settin
 
 import { useTheme } from '../../../components/recruiterDashboard/components/ThemeContext';
 import { Button } from '../../recruiterDashboard/ui/button';
-
+import { Link } from 'react-router-dom';
 const Navbar = ({ onMenuToggle, isSidebarOpen }) => {
   const { theme, toggleTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -121,10 +121,10 @@ const Navbar = ({ onMenuToggle, isSidebarOpen }) => {
               
               {/* Sign Out */}
               <div className="py-1">
-                <button className="w-full hover:bg-red-300  flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                <Link to="/logout" className="w-full hover:bg-red-300  flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                   <LogOut className="h-4 w-4" />
                   <span className="text-sm">Sign Out</span>
-                </button>
+                </Link>
               </div>
             </div>
           )}

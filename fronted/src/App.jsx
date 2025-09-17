@@ -22,11 +22,11 @@ import UserNavbar from "./components/jobSeekerPages/Navbar1";
 import Notifications from "./components/jobSeekerPages/Notification";
 import Applications from "./components/jobSeekerPages/MyApplication";
 import ViewNotification from "./components/jobSeekerPages/ViewNotification";
-import JobSeekerLayout from "./components/jobSeekerPages/JobseekerLayout";  
+import JobSeekerLayout from "./components/jobSeekerPages/JobseekerLayout";
 
 // Jobs Section
 import { Jobs } from "./components/dashboard/landingPages/Jobs";
-import {JobseekerJobs} from "./components/jobSeekerPages/JobseekerJobs";
+import { JobseekerJobs } from "./components/jobSeekerPages/JobseekerJobs";
 import JobDescription from "./components/dashboard/landingPages/JobDescription";
 import ApplyJob from "./components/jobSeekerPages/ApplyJob";
 
@@ -47,7 +47,12 @@ import JobManagementAdmin from "./components/admin/jobs/JobManagement";
 import ApplicationManagementAdmin from "./components/admin/applications/ApplicationManagement";
 import Reports from "./components/admin/reports/Reports";
 import Settings from "./components/admin/settings/Settings";
-
+import { NotificationProvider } from "./contexts/NotificationContext";
+import { AuthProvider } from "./contexts/userSessionContext";
+import { SocketProvider } from "./contexts/SocketContext";
+import LoginRequiredLayout from "./layouts/LoginRequiredLayout";
+import RefreshLayout from "./layouts/RefreshLayout";
+import Logout from "./components/ui/common/logout";
 // Theme Provider
 import { ThemeProvider } from "./components/recruiterDashboard/components/ThemeContext";
 
@@ -58,6 +63,8 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
+import { ToastProvider } from "./contexts/ToastContext";
+import { Toaster } from "./components/ui/toaster";
 
 // ✅ Public landing content
 const FullLandingPage = () => (
@@ -69,17 +76,14 @@ const FullLandingPage = () => (
     <AboutUs />
     <ContactUs />
     <Footer />
-    
-    
   </>
 );
 
 const JobSeekerHome = () => (
   <>
-  <Hero className="w-full" />
-  <Jobs />
+    <Hero className="w-full" />
+    <Jobs />
   </>
-
 );
 
 // ✅ Layout manager with dynamic NavBar
@@ -96,10 +100,8 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      
-      
+      {showUserNavbar && <UserNavbar />}
       <main>{children}</main>
-      
     </>
   );
 };
@@ -107,49 +109,198 @@ const Layout = ({ children }) => {
 // ✅ Main route definitions
 const AppRoutes = () => {
   return (
-    <Layout>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<FullLandingPage />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/employer" element={<Employer />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact_us" element={<ContactUs />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<FullLandingPage />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/jobs" element={<Jobs />} />
+      <Route path="/employer" element={<Employer />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact_us" element={<ContactUs />} />
+      <Route path="/logout" element={<Logout />} />
 
-        {/* Job Seeker Routes */}
-        <Route path="/home" element={<JobSeekerLayout><JobSeekerHome /></JobSeekerLayout>} />
-        <Route path="/profile-setup" element={<JobSeekerLayout><ProfileSetup /></JobSeekerLayout>} />
-        <Route path="/my-profile" element={<JobSeekerLayout><MyProfile /></JobSeekerLayout>} />
-        <Route path="/jobs/:id" element={<JobSeekerLayout><JobDescription /></JobSeekerLayout>} />
-        <Route path="/jobs-for-you" element={<JobSeekerLayout><JobseekerJobs /></JobSeekerLayout>} />
-        <Route path="/apply/:id" element={<JobSeekerLayout><ApplyJob /></JobSeekerLayout>} />
-        <Route path="/notifications" element={<JobSeekerLayout><Notifications /></JobSeekerLayout>} />
-        <Route path="/my-applications" element={<JobSeekerLayout><Applications /></JobSeekerLayout>} />
-        <Route path="/notifications/:id" element={<JobSeekerLayout><ViewNotification /></JobSeekerLayout>} />
+      {/* Protected Routes */}
+      <Route element={<RefreshLayout />}>
+        <Route element={<LoginRequiredLayout />}>
+          {/* Job Seeker Routes */}
+          <Route
+            path="/home"
+            element={
+              <JobSeekerLayout>
+                <JobSeekerHome />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/profile-setup"
+            element={
+              <JobSeekerLayout>
+                <ProfileSetup />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/my-profile"
+            element={
+              <JobSeekerLayout>
+                <MyProfile />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/jobs/:id"
+            element={
+              <JobSeekerLayout>
+                <JobDescription />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/jobs-for-you"
+            element={
+              <JobSeekerLayout>
+                <JobseekerJobs />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/apply/:id"
+            element={
+              <JobSeekerLayout>
+                <ApplyJob />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <JobSeekerLayout>
+                <Notifications />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/my-applications"
+            element={
+              <JobSeekerLayout>
+                <Applications />
+              </JobSeekerLayout>
+            }
+          />
+          <Route
+            path="/notifications/:id"
+            element={
+              <JobSeekerLayout>
+                <ViewNotification />
+              </JobSeekerLayout>
+            }
+          />
 
-        {/* Recruiter Dashboard Routes */}
-        <Route path="/recruiter/dashboard" element={<DashboardLayout><DashboardOverview /></DashboardLayout>}/>
-        <Route path="/recruiter/jobs" element={<DashboardLayout><JobManagement /></DashboardLayout>}/>
-        <Route path="/recruiter/applications" element={<DashboardLayout><ApplicationsManagement /></DashboardLayout>}/>
-        <Route path="/recruiter/exams" element={<DashboardLayout><ExamManagement /></DashboardLayout>}/>
-        <Route path="/recruiter/profile" element={<DashboardLayout><RecruiterProfile /></DashboardLayout>}/>
-        <Route path="/recruiter/reports" element={<DashboardLayout><RecruiterReports /></DashboardLayout>}/>
+          {/* Recruiter Dashboard Routes */}
+          <Route
+            path="/recruiter/dashboard"
+            element={
+              <DashboardLayout>
+                <DashboardOverview />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/recruiter/jobs"
+            element={
+              <DashboardLayout>
+                <JobManagement />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/recruiter/applications"
+            element={
+              <DashboardLayout>
+                <ApplicationsManagement />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/recruiter/exams"
+            element={
+              <DashboardLayout>
+                <ExamManagement />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/recruiter/profile"
+            element={
+              <DashboardLayout>
+                <RecruiterProfile />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/recruiter/reports"
+            element={
+              <DashboardLayout>
+                <RecruiterReports />
+              </DashboardLayout>
+            }
+          />
 
-        {/* Admin Dashboard Routes */}
-        <Route path="/admin" element={<AdminLayout><Overview /></AdminLayout>} />
-        <Route path="/admin/users/" element={<AdminLayout><UserManagement /></AdminLayout>} />  
-        <Route path="/admin/jobs" element={<AdminLayout><JobManagementAdmin /></AdminLayout>} />
-        <Route path="/admin/applications" element={<AdminLayout><ApplicationManagementAdmin /></AdminLayout>} />
-        <Route path="/admin/reports" element={<AdminLayout><Reports /></AdminLayout>} />
-        <Route path="/admin/settings" element={<AdminLayout><Settings /></AdminLayout>} /> 
-
-      
+          {/* Admin Dashboard Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminLayout>
+                <Overview />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/users/"
+            element={
+              <AdminLayout>
+                <UserManagement />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/jobs"
+            element={
+              <AdminLayout>
+                <JobManagementAdmin />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/applications"
+            element={
+              <AdminLayout>
+                <ApplicationManagementAdmin />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <AdminLayout>
+                <Reports />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminLayout>
+                <Settings />
+              </AdminLayout>
+            }
+          />
+        </Route>
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    </Routes>
   );
 };
 
@@ -158,7 +309,18 @@ function App() {
     <div className="App">
       <Router>
         <ThemeProvider>
-          <AppRoutes />
+          <NotificationProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <ToastProvider>
+                  <Toaster />
+                  <Layout>
+                    <AppRoutes />
+                  </Layout>
+                </ToastProvider>
+              </SocketProvider>
+            </AuthProvider>
+          </NotificationProvider>
         </ThemeProvider>
       </Router>
     </div>
