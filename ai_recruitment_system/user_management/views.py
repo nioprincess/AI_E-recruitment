@@ -14,6 +14,7 @@ from file_management.tasks import upload_file_and_save, delete_file, update_file
 from user_management.models import Cv
 from notification_management.serializers import NotificationSerializer
 from notification_management.models import Notification
+
 User = get_user_model()
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -58,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ['check_password_strength']:
             permission_classes = [permissions.AllowAny]
-        elif self.action in ['change_password']:
+        elif self.action in ['change_password', 'cv']:
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [IsAdmin]  

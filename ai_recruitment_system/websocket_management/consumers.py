@@ -3,6 +3,8 @@ import json
 import base64
 import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
+
+from websocket_management.observation_utils import process_base64_image
 from .ai_processors import AIProcessor
 from channels.layers import get_channel_layer
 import base64
@@ -32,8 +34,11 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import os
-
+from .tasks import process_image_data
 from urllib.parse import parse_qs
+
+       
+ 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SeparateAudioVideo") 
@@ -613,6 +618,53 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         }))
 
 
+
+class InterviewConsumer(AsyncWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.group_name = 'interview_room'
+        
+    async def connect(self):
+        user = self.scope["user"]
+
+        if user.is_authenticated:
+            self.group_name = f"user_{user.id}_interview"
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+       
+            await self.accept()
+        else:
+            await self.close()
+        
+    async def disconnect(self, close_code):
+        user = self.scope["user"]
+        if user.is_authenticated:
+            await self.channel_layer.group_discard(f"user_{user.id}", self.channel_name)
+        
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        ai_message= data.get("message")
+        user = self.scope["user"]
+
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+        f"user_{user.id}_interview",
+        {
+            "type": "send_interview_response",  
+            "message": ai_message
+        }
+    )
+
+
+    async def send_interview_response(self, event):
+        message = event["message"]
+
+        await self.send(text_data=json.dumps({
+            "message": message
+        }))
+
+
 class QuasiPeerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
@@ -730,3 +782,46 @@ class QuasiPeerConsumer(AsyncWebsocketConsumer):
             }
         except Exception as e:
             raise ValueError(f"Encryption failed: {str(e)}")
+ 
+
+# -------------------- Helper Functions --------------------
+class ObservationConsumer(AsyncWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.group_name = 'observation_room'
+        
+    async def connect(self):
+        user = self.scope["user"]
+
+        if user.is_authenticated:
+            self.group_name = f"user_{user.id}_observation"
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+       
+            await self.accept()
+        else:
+            await self.close()
+        
+    async def disconnect(self, close_code):
+        user = self.scope["user"]
+        if user.is_authenticated:
+            await self.channel_layer.group_discard(f"user_{user.id}", self.channel_name)
+        
+
+    async def receive(self, text_data):
+         
+        data = json.loads(text_data)
+        image_data= data.get("image_data")
+        request_id= data.get("id")
+        user = self.scope["user"]
+        process_image_data.delay(image_data, user.id, request_id)
+
+     
+
+
+    async def send_observation_response(self, event):
+        message = event["message"]
+
+        await self.send(text_data=json.dumps({
+            "message": message
+        }))

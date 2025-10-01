@@ -106,6 +106,7 @@ class CvSerializer(serializers.ModelSerializer):
             'c_f_id_upload',
             'c_content',
             'created_at',
+            'parsed_data',
             'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user_id']

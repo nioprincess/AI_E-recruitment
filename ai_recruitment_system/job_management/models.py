@@ -11,7 +11,6 @@ class Job(models.Model):
     j_employement_type = models.CharField(max_length=255, blank=True, null=True)
     j_salary_min = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     j_salary_max = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-
     j_deadline = models.DateTimeField()
     j_attachments = models.ManyToManyField('file_management.File', blank=True, related_name='job_attachments')
     j_status = models.CharField(max_length=255)
@@ -24,9 +23,10 @@ class Job(models.Model):
 
 
 class Application(models.Model):
-    u_id = models.IntegerField()
-    j_id = models.IntegerField()
+    u_id = models.ForeignKey('user_management.User', on_delete=models.CASCADE, related_name='job_applications')
+    j_id = models.ForeignKey('job_management.Job', on_delete=models.CASCADE, related_name='applications_job')
     a_cover_letter = models.ForeignKey ('file_management.File', on_delete=models.SET_NULL, related_name='application_letter', blank=True, null=True)
+    a_cover_letter_content = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=255)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now )
@@ -35,6 +35,28 @@ class Application(models.Model):
     class Meta:
         managed = True
         db_table = 'application'
+
+
+class ApplicationStage(models.Model):
+    a_id = models.ForeignKey('job_management.Application', on_delete=models.CASCADE, related_name='application_stages')
+    s_name = models.CharField(max_length=255, blank=True, null=True)
+    s_started_at = models.DateTimeField(blank=True, null=True)
+    s_ended_at = models.DateTimeField(blank=True, null=True)
+    s_notes = models.TextField(blank=True, null=True)
+    s_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now )
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = True
+        db_table = 'application_stage'
+        constraints = [
+            models.UniqueConstraint(
+                fields=["a_id", "s_name"],
+                condition=models.Q(s_completed=False),
+                name="unique_active_stage_per_application",
+            )
+        ]
 
 
  

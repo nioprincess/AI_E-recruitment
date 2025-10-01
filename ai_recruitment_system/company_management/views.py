@@ -86,6 +86,26 @@ class CompanyViewSet(viewsets.ModelViewSet):
             'success': True,
             'message': 'Company deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['get'], permission_classes=[])
+    def my_company(self,request, *args, **kwargs):
+        try:
+                   
+            
+            company= Company.objects.filter(c_admin= request.user).first()
+            serializer= CompanySerializer(company)
+            
+            
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'message': 'Company user fetched successfully'
+            })
+        except CompanyUser.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Company user not found'
+            }, status=status.HTTP_404_NOT_FOUND)
     @action(detail=False, methods=['get', 'post', 'put', 'patch', 'delete'], permission_classes=[IsAdmin])
     def user(self,request, *args, **kwargs):
         
@@ -172,6 +192,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
             
     @action(detail=False, methods=['get', 'post', 'put', 'patch', 'delete'], permission_classes=[permissions.IsAuthenticated], url_path='address')
     def address(self, request, *args, **kwargs):
+        print(request.data)
         if request.method == 'GET':
             company_id = request.query_params.get('c_id')
             if  company_id:
@@ -209,6 +230,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
                     'message': 'You are not authorized to create an address'
                 }, status=status.HTTP_403_FORBIDDEN)
             serializer = AddressSerializer(data=request.data)
+            
             serializer.is_valid(raise_exception=True)
             serializer.save(c_id = company)
             send_notification.delay(

@@ -29,6 +29,29 @@ def download_cv_file(request, cv_id):
         return Response({'error': 'File missing from disk.'}, status=410)
     
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def download_cv_user_file(request, user_id):
+    try:
+        cv = Cv.objects.get( user_id=user_id)
+
+        if not cv.c_f_id or not cv.c_f_id.f_path:
+            return Response({'error': 'No file found for this CV.'}, status=404)
+
+        file_path = cv.c_f_id.f_path.path
+        filename = os.path.basename(file_path)
+
+        response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=filename)
+        return response
+
+    except Cv.DoesNotExist:
+        return Response({'error': 'CV not found or unauthorized access.'}, status=404)
+
+    except FileNotFoundError:
+        return Response({'error': 'File missing from disk.'}, status=410)
+    
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def download_job_attachment(request, file_id):
@@ -41,8 +64,24 @@ def download_job_attachment(request, file_id):
     if not job:
         return Response({'success': False, 'message': 'This file is not linked to any job.'}, status=403)
     
-    if job.u_id != request.user and request.user.u_role != 'admin':
-        return Response({'success': False, 'message': 'Unauthorized'}, status=403)
+    # if job.u_id != request.user and request.user.u_role != 'admin':
+    #     return Response({'success': False, 'message': 'Unauthorized'}, status=403)
+
+    file_path = file.f_path.path
+    if not os.path.exists(file_path):
+        raise   Response({'error': 'No file found for this CV.'}, status=404)
+
+    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file.f_name)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def download_job_cover(request, file_id):
+    try:
+        file = File.objects.get(id=file_id)
+    except File.DoesNotExist:
+        return Response({'error': 'No file found for this Cover.'}, status=404)
+
+    
 
     file_path = file.f_path.path
     if not os.path.exists(file_path):

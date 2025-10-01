@@ -92,6 +92,7 @@ class Cv(models.Model):
     user_id = models.ForeignKey(User, models.DO_NOTHING, related_name='cv_user')
     c_f_id =models.ForeignKey('file_management.File', on_delete=models.SET_NULL, related_name='cv_file', blank=True, null=True)
     c_content = models.TextField( blank=True, null=True)
+    parsed_data = models.TextField( blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at =models.DateTimeField(default=timezone.now)
 

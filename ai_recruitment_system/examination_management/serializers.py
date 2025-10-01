@@ -1,11 +1,10 @@
 from rest_framework import serializers
 from .models import (
-    Exam, ExamQuestion, ExamAnswer, ExamObservation,
-    Interview, InterviewQuestion, InterviewResponse, InterviewObservation
+    ApplicationExam, Exam, ExamNoiseHistory, ExamQuestion, ExamAnswer, ExamObservation,
+    InterviewQuestion, InterviewResponse, InterviewObservation
 )
-from job_management.serializers import ApplicationSerializer
 from sharedapp_management.serializers import UserSerializer
-from  job_management.models import Application
+ 
 
 class ExamAnswerSerializer(serializers.ModelSerializer):
   
@@ -14,33 +13,66 @@ class ExamAnswerSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
-class ExamQuestionSerializer(serializers.ModelSerializer):
-    answers = ExamAnswerSerializer(many=True, read_only=True)
-    
-    class Meta:
-        model = ExamQuestion
-        fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+
 
 class ExamObservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamObservation
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
-
+ 
 class ExamSerializer(serializers.ModelSerializer):
-    questions = ExamQuestionSerializer(many=True, read_only=True)
-    observations = ExamObservationSerializer(many=True, read_only=True)
-    a_id = serializers.PrimaryKeyRelatedField(
-        queryset=Application.objects.all(),
-        
-    )
-    
     
     class Meta:
         model = Exam
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
+
+
+     
+    def create(self, validated_data):
+        # Remove a_ids from validated_data since it's not a model field
+        a_ids = validated_data.pop('a_ids', [])
+        exam_data = validated_data.copy()
+        # Create the exam instance
+        instance = Exam.objects.create(**exam_data)
+        for a_id in a_ids:
+            ApplicationExam.objects.create(a_id=a_id, e_id=instance)
+        return instance
+    
+class ExamNoiseHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamNoiseHistory
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
+
+   
+class ExamQuestionSerializer(serializers.ModelSerializer):
+    exam =  serializers.SerializerMethodField()
+    answer =  serializers.SerializerMethodField()
+
+    class Meta:
+        model = ExamQuestion
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']   
+    def get_answer(self, obj):
+        try:
+           
+            answer = ExamAnswer.objects.get(
+                q=obj,
+               
+            )
+            if answer:
+                return ExamAnswerSerializer(answer).data
+            return None
+        except ExamAnswer.DoesNotExist:
+            return None
+
+    def get_exam(self, obj):
+       from job_management.serializers import ApplicationExamSerializer
+       return ApplicationExamSerializer(obj.e).data if obj.e else None
+ 
+
 
 class InterviewResponseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,13 +94,4 @@ class InterviewObservationSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
-class InterviewSerializer(serializers.ModelSerializer):
-    questions = InterviewQuestionSerializer(many=True, read_only=True)
-    observations = InterviewObservationSerializer(many=True, read_only=True)
-    a_id = ApplicationSerializer(read_only=True)
-    u_id = UserSerializer(read_only=True)
-    
-    class Meta:
-        model = Interview
-        fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+ 

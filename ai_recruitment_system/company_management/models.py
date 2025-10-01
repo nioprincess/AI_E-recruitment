@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 User= get_user_model()
 class Company(models.Model):
     c_admin = models.ForeignKey(User, models.DO_NOTHING, related_name='company_admin', null=True)
+    c_name= models.CharField(max_length=255, blank=True, null=True)
     c_type = models.CharField(max_length=255, blank=True, null=True)
     c_industry = models.CharField(max_length=255, blank=True, null=True)
     c_reg_number = models.CharField(max_length=255, blank=True, null=True)

@@ -8,6 +8,7 @@ import numpy as np
 import struct
 from .voski_loader import get_vosk_model
 from vosk import KaldiRecognizer
+from .observation_utils import process_base64_image
 
 
 vosk_model = None
@@ -33,6 +34,27 @@ def process_candidate(candidate_id, user_id):
         }
     )
     return "Done"
+
+
+
+@shared_task
+def process_image_data(imageData, user_id, request_id):
+     
+    detections = process_base64_image(imageData)
+    detections["id"]= request_id
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+    f"user_{user_id}_observation",
+    {
+        "type": "send_observation_response",  
+        "message": detections
+    }
+)
+    return "Done"
+
+
+ 
+
 
 
 @shared_task

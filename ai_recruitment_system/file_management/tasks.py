@@ -14,7 +14,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from docx import Document
 from job_management.models import Job, Application
-
+from ai_agent_management.tasks import parse_cv_task
 User = get_user_model()
 
 
@@ -159,32 +159,36 @@ def update_file(file_id, new_file_data_bytes, new_file_name, new_file_type, new_
     
 @shared_task
 def save_cv_file(file_data_bytes, file_name, file_type, file_size, user_id=None, company_id=None, category='p_picture'):
-    content_file = ContentFile(file_data_bytes, name=file_name)
-    cv_file= File.objects.create(
-            u_id_id=user_id,
-            c_id_id=company_id,
-            f_name=file_name,
-            f_url='',
-            f_path=content_file,
-            f_type=file_type,
-            f_size=file_size,
-            f_category=category,
-            f_public_id=file_name,
-            f_format=None,
-            f_resource_type=None
-        )
-    cv= Cv.objects.filter(user_id=user_id).first()
-    if cv:
-        cv.c_f_id = cv_file
-    if file_type == "application/pdf":
-        pdf_content = clean_text(get_pdf_content(cv_file.f_path.path))
-        cv.c_content = pdf_content.strip()
-    if file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        docx_content = get_docx_content(cv_file.f_path.path)
-        cv.c_content = clean_text(docx_content).strip()
-    cv.save()
-    
-    return f"File '{file_name}' saved successfully"
+    try:
+        content_file = ContentFile(file_data_bytes, name=file_name)
+        cv_file= File.objects.create(
+                u_id_id=user_id,
+                c_id_id=company_id,
+                f_name=file_name,
+                f_url='',
+                f_path=content_file,
+                f_type=file_type,
+                f_size=file_size,
+                f_category=category,
+                f_public_id=file_name,
+                f_format=None,
+                f_resource_type=None
+            )
+        cv= Cv.objects.filter(user_id=user_id).first()
+        if cv:
+            cv.c_f_id = cv_file
+        if file_type == "application/pdf":
+            pdf_content = clean_text(get_pdf_content(cv_file.f_path.path))
+            cv.c_content = pdf_content.strip()
+        if file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            docx_content = get_docx_content(cv_file.f_path.path)
+            cv.c_content = clean_text(docx_content).strip()
+        cv.save()
+        parse_cv_task.delay(user_id, cv.c_content)
+        
+        return f"File '{file_name}' saved successfully"
+    except Exception as e:
+        return f"Failed to save CV file: {str(e)}"
 
 
 
@@ -241,9 +245,16 @@ def save_job_application_attachment(file_data_bytes, file_name, file_type, file_
     application= Application.objects.filter(id=application_id).first()
     if application:
         application.a_cover_letter=file
-        application.save()
     else:
         return f"Job application with ID {job_id} does not exist."
+    if file_type == "application/pdf":
+        pdf_content = clean_text(get_pdf_content(file.f_path.path))
+        application.a_cover_letter_content = pdf_content.strip()
+    if file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        docx_content = get_docx_content(file.f_path.path)
+        application.a_cover_letter_content = clean_text(docx_content).strip()
+    application.save()
+   
     return file.id
 
 @shared_task
