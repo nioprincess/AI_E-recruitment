@@ -1,64 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useUserAxios from "../../hooks/useUserAxios";
 
 const Applications = () => {
   const navigate = useNavigate();
+  const axios= useUserAxios()
+  const[ applications  , setApplications]= useState([])
+  const getApplications= async()=>{
+    try {
+      const resp = await axios.get("/api/jobs/my-applications")
+      if(resp.data.success){
+         setApplications(resp.data.data)
+      }
+      
+    } catch (error) {
+      console.log(error)
+      
+    }
+  }
 
-  // Sample application data
-  const applications = [
-    {
-      id: 1,
-      jobTitle: "Senior Frontend Developer",
-      company: "Tech Solutions Rwanda",
-      location: "Kigali, Rwanda",
-      appliedDate: "2023-05-15",
-      status: "shortlisted",
-      lastUpdate: "2023-05-20",
-      salary: "RWF 1,500,000 - 2,000,000",
-      type: "Full-time",
-      aiExam: { score: 85, completed: true },
-      interview: { scheduled: "2023-05-25", completed: false },
-    },
-    {
-      id: 2,
-      jobTitle: "Backend Engineer",
-      company: "Andela Rwanda",
-      location: "Remote",
-      appliedDate: "2023-05-10",
-      status: "under-review",
-      lastUpdate: "2023-05-12",
-      salary: "RWF 1,200,000 - 1,800,000",
-      type: "Contract",
-      aiExam: { score: 72, completed: true },
-      interview: { scheduled: null, completed: false },
-    },
-    {
-      id: 3,
-      jobTitle: "UX Designer",
-      company: "KLab Rwanda",
-      location: "Kigali, Rwanda",
-      appliedDate: "2023-04-28",
-      status: "rejected",
-      lastUpdate: "2023-05-05",
-      salary: "RWF 1,000,000 - 1,500,000",
-      type: "Full-time",
-      aiExam: { score: 68, completed: true },
-      interview: { scheduled: null, completed: false },
-    },
-    {
-      id: 4,
-      jobTitle: "DevOps Specialist",
-      company: "Irembo Ltd",
-      location: "Kigali, Rwanda",
-      appliedDate: "2023-05-18",
-      status: "applied",
-      lastUpdate: "2023-05-18",
-      salary: "RWF 1,800,000 - 2,500,000",
-      type: "Full-time",
-      aiExam: { score: null, completed: false },
-      interview: { scheduled: null, completed: false },
-    },
-  ];
+   
+  
 
   const statusStyles = {
     applied: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200",
@@ -69,7 +31,7 @@ const Applications = () => {
   };
 
   const statusLabels = {
-    applied: "Applied",
+    submitted: "Submitted",
     "under-review": "Under Review",
     shortlisted: "Shortlisted",
     rejected: "Not Selected",
@@ -78,7 +40,7 @@ const Applications = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "applied":
+      case "submitted":
         return (
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -90,7 +52,7 @@ const Applications = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
-      case "shortlisted":
+      case "accepted":
         return (
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -113,18 +75,15 @@ const Applications = () => {
     }
   };
 
+  useEffect(()=>{
+    getApplications()
+  },[])
+
   return (
     <div className="max-w-screen-lg mx-auto px-4 py-6 mt-12 dark:bg-black-100">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">My Applications</h1>
-        {/* <div className="flex space-x-2">
-          <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-            Filter
-          </button>
-          <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-            Sort
-          </button>
-        </div> */}
+       
       </div>
 
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow overflow-hidden">
@@ -135,7 +94,7 @@ const Applications = () => {
               All Applications
             </button>
             <button className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-              Active
+              Accepted
             </button>
             <button className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
               Archived
@@ -152,19 +111,19 @@ const Applications = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       <span className="text-lg font-medium text-gray-500 dark:text-gray-400">
-                        {application.company.charAt(0)}
+                        {application?.job.company?.c_admin?.u_first_name?.charAt(0)}
                       </span>
                     </div>
                     <div className="ml-4">
                       <h3 className="text-lg font-medium text-gray-800 dark:text-white">
-                        {application.jobTitle}
+                        {application.job.j_title}
                       </h3>
                       <div className="flex flex-wrap items-center mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        <span>{application.company}</span>
+                        <span>{application?.job?.company?.c_admin?.u_first_name}</span>
                         <span className="mx-2">•</span>
-                        <span>{application.location}</span>
+                        <span>{application?.job?.j_location}</span>
                         <span className="mx-2">•</span>
-                        <span>{application.type}</span>
+                        <span>{application?.job?.j_employment_type}</span>
                       </div>
                     </div>
                   </div>
@@ -174,13 +133,13 @@ const Applications = () => {
                   <div className="text-right">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Applied on</p>
                     <p className="font-medium text-gray-700 dark:text-gray-300">
-                      {new Date(application.appliedDate).toLocaleDateString()}
+                      {new Date(application?.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Salary</p>
                     <p className="font-medium text-gray-700 dark:text-gray-300">
-                      {application.salary}
+                      {application?.job?.j_salary_min}- {application?.job?.j_salary_max}
                     </p>
                   </div>
                 </div>
@@ -190,23 +149,26 @@ const Applications = () => {
               <div className="mt-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between">
                   <div className="flex items-center mb-2 md:mb-0">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusStyles[application.status]}`}>
-                      {getStatusIcon(application.status)}
-                      {statusLabels[application.status]}
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusStyles[application.stages.filter(s=>s.s_completed===false)[0]?.s_name]}`}>
+                      {getStatusIcon(application.stages.filter(s=>s.s_completed===false)[0]?.s_name  )}
+                      {statusLabels[application.stages.filter(s=>s.s_completed===false)[0]?.s_name  ]}
                     </span>
+                   {application.stages.filter(s=>s.s_completed===false)[0]?.s_notes?.length>0 &&   <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">
+                      Comment: {application.stages.filter(s=>s.s_completed===false)[0]?.s_notes}
+                    </span>}
                     <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">
-                      Last updated: {new Date(application.lastUpdate).toLocaleDateString()}
+                      Last updated: {new Date(application?.updated_at).toLocaleDateString()}
                     </span>
                   </div>
 
                   <div className="flex space-x-2">
-                    {application.status === "shortlisted" && (
+                    {application.stages.filter(s=>s.s_completed===false)[0]?.s_name === "shortlisted" && (
                       <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">
                         View Interview Details
                       </button>
                     )}
                     <button 
-                      onClick={() => navigate(`/jobs/${application.id}`)}
+                      onClick={() => navigate(`/jobs/${application?.job?.id}`)}
                       className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
                       View Job
@@ -222,22 +184,22 @@ const Applications = () => {
                 {/* Progress Steps */}
                 <div className="mt-4">
                   <div className="flex items-center">
-                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${application.status === 'applied' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${application.stages.filter(s=>s.s_completed===false)[0]?.s_name === 'submitted' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                       1
                     </div>
-                    <div className={`flex-1 h-1 ${application.status !== 'applied' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
-                    
-                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${['under-review', 'shortlisted', 'hired'].includes(application.status) ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                    <div className={`flex-1 h-1 ${application?.status !== 'submitted' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+
+                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${['under-review', 'accepted', 'hired'].includes(application.stages.filter(s=>s.s_completed===false)[0]?.s_name) ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                       2
                     </div>
-                    <div className={`flex-1 h-1 ${['shortlisted', 'hired'].includes(application.status) ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+                    <div className={`flex-1 h-1 ${['accepted', 'hired'].includes(application.stages.filter(s=>s.s_completed===false)[0]?.s_name) ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
                     
-                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${application.status === 'shortlisted' ? 'bg-blue-600 text-white' : application.status === 'hired' ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${application.stages.filter(s=>s.s_completed===false)[0]?.s_name === 'accepted' ? 'bg-blue-600 text-white' : application.stages.filter(s=>s.s_completed===false)[0]?.s_name === 'hired' ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                       3
                     </div>
-                    <div className={`flex-1 h-1 ${application.status === 'hired' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+                    <div className={`flex-1 h-1 ${application?.status === 'hired' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
                     
-                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${application.status === 'hired' ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                    <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${application.stages.filter(s=>s.s_completed===false)[0]?.s_name === 'hired' ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
@@ -252,7 +214,7 @@ const Applications = () => {
                 </div>
 
                 {/* AI Exam and Interview Status */}
-                {application.aiExam.completed && (
+                {application?.aiExam?.completed && (
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -291,7 +253,7 @@ const Applications = () => {
                       </div>
                     </div>
 
-                    {application.interview.scheduled ? (
+                    {application?.interview?.scheduled ? (
                       <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                         <div className="flex items-center justify-between">
                           <div>
@@ -312,7 +274,7 @@ const Applications = () => {
                         <div>
                           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Interview</h4>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {application.status === 'shortlisted' ? 'Pending schedule' : 'Not scheduled'}
+                            {application.stages.filter(s=>s.s_completed===false)[0]?.s_name === 'shortlisted' ? 'Pending schedule' : 'Not scheduled'}
                           </p>
                         </div>
                         <div className="text-gray-400">

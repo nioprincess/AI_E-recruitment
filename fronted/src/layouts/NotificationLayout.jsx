@@ -9,21 +9,11 @@ function NotificationLayout() {
   const { setToastMessage } = useToast();
   const {connectWebSocket} = useSocket();
   const{notifications,setNotifications}= useNotifications()
-  const axios= useUserAxios()
-
-    const fetchNotifications = async () => {
-    try {
-      const response = await axios.get("/api/notifications/unread/");
-      setNotifications(response.data);
-      
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
+ 
   
 
   useEffect(() => {
-    const socket=connectWebSocket("/ws/notifications/");
+    const socket=connectWebSocket("/ws/notification/");
     socket.onmessage = (event ) => {
       console.log(event)
       try {
@@ -54,9 +44,7 @@ function NotificationLayout() {
       socket?.close();  
     };
   }, []);
-   useEffect(() => {
-    fetchNotifications();
-  }, []);
+   
 
   return <Outlet />;
 }

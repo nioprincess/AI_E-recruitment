@@ -49,6 +49,8 @@ const Navbar1 = () => {
   const menuItems = [
     { label: "Explore Opportunities", href: "/jobs-for-you" },
     { label: "My Applications", href: "/my-applications" },
+      { label: "My Resumes", href: "/my-resumes" },
+      { label: "My Exams", href: "/my-exams" },
     { label: "Notifications", href: "/notifications" },
   ];
 

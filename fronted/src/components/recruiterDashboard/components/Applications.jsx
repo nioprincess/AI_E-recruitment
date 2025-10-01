@@ -17,74 +17,42 @@ import {
   Filter,
   ChevronDown,
   Send,
+  Download,
+  ArrowUpCircle,
+  CircleArrowLeft,
+  SquarePen,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
 import { Textarea } from "../ui/textarea";
+import useUserAxios from "../../../hooks/useUserAxios";
+import { Link } from "react-router-dom";
 
-// Mock data
-const mockJobs = [
-  { id: "JOB-001", title: "Senior Frontend Developer" },
-  { id: "JOB-002", title: "Product Manager" },
-  { id: "JOB-003", title: "UX Designer" },
-];
-
-const mockApplicants = [
-  {
-    id: "1",
-    name: "Alex Johnson",
-    email: "alex.johnson@example.com",
-    appliedJobId: "JOB-001",
-    status: "New",
-    appliedDate: "2024-01-20",
-    resumeSummary: "Experienced frontend developer with 5+ years in React",
-    answers: [
-      { q: "Why do you want to work here?", a: "I admire your company's mission" },
-      { q: "What are your strengths?", a: "Problem-solving and teamwork" }
-    ]
-  },
-  {
-    id: "2",
-    name: "Sarah Williams",
-    email: "sarah.w@example.com",
-    appliedJobId: "JOB-002",
-    status: "New",
-    appliedDate: "2024-01-19",
-    resumeSummary: "Product manager with startup experience",
-    answers: [
-      { q: "Why do you want to work here?", a: "I want to build products that matter" },
-      { q: "What are your strengths?", a: "Strategic thinking and user empathy" }
-    ]
-  },
-  {
-    id: "3",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    appliedJobId: "JOB-003",
-    status: "Screened",
-    appliedDate: "2024-01-18",
-    fitScore: 85,
-    resumeSummary: "UX designer with background in psychology",
-    answers: [
-      { q: "Why do you want to work here?", a: "I respect your design-first approach" },
-      { q: "What are your strengths?", a: "User research and prototyping" }
-    ],
-    aiReasons: ["Strong portfolio", "Relevant experience", "Good cultural fit"]
-  },
-];
+// Status mapping from your API to component status
+const statusMapping = {
+  submitted: "New",
+  "under-review": "Under Review",
+  accepted: "Accepted",
+  rejected: "Rejected",
+};
 
 const statusStyles = {
   New: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  Screened: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-  Shortlisted: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  "Under Review":
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+  Accepted:
+    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
   Rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
 const ApplicationsPage = () => {
   // Data state
-  const [applicants, setApplicants] = useState(mockApplicants);
+  const [applications, setApplications] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const axios = useUserAxios();
 
   // UI state
   const [search, setSearch] = useState("");
@@ -92,21 +60,155 @@ const ApplicationsPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [viewingApplicant, setViewingApplicant] = useState(null);
-  const [screeningApplicant, setScreeningApplicant] = useState(null);
+ 
   const [bulkScreenOpen, setBulkScreenOpen] = useState(false);
   const [screening, setScreening] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState("Congratulations! You've been shortlisted for the next round. We'll contact you shortly to schedule an interview.");
+  const [notificationMessage, setNotificationMessage] = useState(
+    "Congratulations! You've been shortlisted for the next round. We'll contact you shortly to schedule an interview."
+  );
   const [sendEmailNotification, setSendEmailNotification] = useState(true);
   const [showNotificationSuccess, setShowNotificationSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [changingStatus, setChangingStatus] = useState(false);
+  const [newStatus, setNewStatus] = useState({
+    rejected: false,
+    accepted: false,
+    "under-review": false,
+  });
+  const [newStatusNotes, setNewStatusNotes] = useState("");
+  const [currentApplication, setCurrentApplication] = useState(null);
   
+  // Bulk status change state
+  const [bulkStatusChangeOpen, setBulkStatusChangeOpen] = useState(false);
+  const [bulkChangingStatus, setBulkChangingStatus] = useState(false);
+  const [bulkNewStatus, setBulkNewStatus] = useState({
+    rejected: false,
+    accepted: false,
+    "under-review": false,
+  });
+  const [bulkStatusNotes, setBulkStatusNotes] = useState("");
+
   // Dropdown states
   const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRefs = useRef({});
 
+  const changeStatus = (app) => {
+    setChangingStatus(true);
+    setCurrentApplication(app);
+  };
+
+  const handleChangingApplicationStatus = async () => {
+    console.log(currentApplication)
+    try {
+      if ((!newStatus.accepted && !newStatus.rejected && !newStatus["under-review"]) || !currentApplication)
+        return;
+      const resp = await axios.patch(
+        `/api/jobs/${currentApplication.job.id}/applications-status/${currentApplication.id}/`,
+        {
+          status:  newStatus.accepted ? "accepted" : newStatus.rejected ? "rejected" : "under-review",
+          notes: newStatusNotes,
+        }
+      );
+      if (resp.data.success) {
+        setApplications((prev) =>
+          prev.map((app) =>
+            app.id === currentApplication.id
+              ? { ...app, status: resp.data.data.status === "accepted" ? "Accepted" : resp.data.data.status === "rejected" ? "Rejected" : "Under Review" }
+              : app
+          )
+        );
+        setNewStatus({ rejected: false, accepted: false, "under-review": false });
+        setCurrentApplication(null);
+        setChangingStatus(false);
+        setNewStatusNotes("");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Bulk status change functions
+  const handleBulkStatusChange = async () => {
+    if ((!bulkNewStatus.accepted && !bulkNewStatus.rejected && !bulkNewStatus["under-review"]) || selectedIds.size === 0) {
+      return;
+    }
+
+    setBulkChangingStatus(true);
+
+    try {
+      const selectedApps = applications.filter(app => selectedIds.has(app.id));
+      const status = bulkNewStatus.accepted ? "accepted" : bulkNewStatus.rejected ? "rejected" : "under-review";
+      
+      // Process each application
+      const updatePromises = selectedApps.map(async (app) => {
+        try {
+          const resp = await axios.patch(
+            `/api/jobs/${app.job.id}/applications-status/${app.id}/`,
+            {
+              status: status,
+              notes: bulkStatusNotes,
+            }
+          );
+          return { appId: app.id, success: true, newStatus: resp.data.data.status };
+        } catch (error) {
+          console.error(`Failed to update application ${app.id}:`, error);
+          return { appId: app.id, success: false };
+        }
+      });
+
+      const results = await Promise.all(updatePromises);
+      
+      // Update applications state with successful changes
+      setApplications((prev) =>
+        prev.map((app) => {
+          const result = results.find(r => r.appId === app.id);
+          if (result && result.success) {
+            const displayStatus = result.newStatus === "accepted" ? "Accepted" 
+              : result.newStatus === "rejected" ? "Rejected" 
+              : "Under Review";
+            return { ...app, status: displayStatus };
+          }
+          return app;
+        })
+      );
+
+      // Count successful updates
+      const successCount = results.filter(r => r.success).length;
+      const failureCount = results.length - successCount;
+
+      // Reset form and close modal
+      setBulkNewStatus({ rejected: false, accepted: false, "under-review": false });
+      setBulkStatusNotes("");
+      setBulkStatusChangeOpen(false);
+      setSelectedIds(new Set()); // Clear selection
+
+      // Show success message
+      if (successCount > 0) {
+        setShowNotificationSuccess(true);
+        setTimeout(() => setShowNotificationSuccess(false), 3000);
+      }
+
+      if (failureCount > 0) {
+        console.warn(`${failureCount} applications failed to update`);
+      }
+
+    } catch (error) {
+      console.error("Bulk status change failed:", error);
+    } finally {
+      setBulkChangingStatus(false);
+    }
+  };
+
+  const openBulkStatusChange = () => {
+    if (selectedIds.size > 0) {
+      setBulkStatusChangeOpen(true);
+    }
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      Object.values(dropdownRefs.current).forEach(ref => {
+      Object.values(dropdownRefs.current).forEach((ref) => {
         if (ref && !ref.contains(event.target)) {
           setOpenDropdown(null);
         }
@@ -123,20 +225,64 @@ const ApplicationsPage = () => {
   const [page, setPage] = useState(1);
   const perPage = 6;
 
+  // Transform API data to match component format
+  const transformApplications = (apiData) => {
+    return apiData.map((app) => ({
+      id: app.id.toString(),
+      name: `${app.applicant.u_first_name} ${app.applicant.u_last_name}`,
+      email: app.applicant.u_email,
+      appliedJobId: app.job.id.toString(),
+      status: statusMapping[app.status] || "New",
+      appliedDate: app.created_at.split("T")[0],
+      resumeSummary: app.notes || "No summary provided",
+      phone: app.applicant.u_phone,
+      coverLetter: app.a_cover_letter,
+      job: app.job,
+      applicant: app.applicant,
+      // Mock data for AI features (you can replace with real AI integration)
+      answers: [
+        { q: "Cover Letter", a: app.notes || "No cover letter provided" },
+      ],
+      // These will be populated after screening
+      fitScore: null,
+      aiReasons: null,
+      screened: app.status !== "submitted",
+    }));
+  };
+
+  // Extract unique jobs from applications
+  const extractJobs = (applications) => {
+    const jobMap = new Map();
+    applications.forEach((app) => {
+      if (app.job && !jobMap.has(app.job.id)) {
+        jobMap.set(app.job.id, {
+          id: app.job.id.toString(),
+          title: app.job.j_title,
+          company:
+            app.job.company?.c_name ||
+            app.job.company?.c_description ||
+            "Unknown Company",
+        });
+      }
+    });
+    return Array.from(jobMap.values());
+  };
+
   /** ---------- Filtering ---------- */
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return applicants.filter((a) => {
+    return applications.filter((a) => {
       const matchesQ =
         !q ||
         a.name.toLowerCase().includes(q) ||
         a.email.toLowerCase().includes(q) ||
-        jobTitle(a.appliedJobId).toLowerCase().includes(q);
+        a.job?.j_title?.toLowerCase().includes(q) ||
+        a.phone?.includes(q);
       const matchesJob = jobFilter === "all" || a.appliedJobId === jobFilter;
       const matchesStatus = statusFilter === "all" || a.status === statusFilter;
       return matchesQ && matchesJob && matchesStatus;
     });
-  }, [search, jobFilter, statusFilter, applicants]);
+  }, [search, jobFilter, statusFilter, applications]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const startIndex = (page - 1) * perPage;
@@ -173,113 +319,152 @@ const ApplicationsPage = () => {
   };
 
   /** ---------- Actions ---------- */
-  const jobTitle = (id) => mockJobs.find((j) => j.id === id)?.title ?? "—";
-  
-  const markStatus = (id, status) => {
-    setApplicants((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status } : a))
-    );
-  };
-
-  const screenOne = async (a) => {
-    setScreeningApplicant(a);
-    setScreening(true);
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    // Mock result: generate a pseudo score & status
-    const score = Math.floor(60 + Math.random() * 40);
-    const qualified = score >= 70;
-    const reasons = qualified
-      ? [
-          "Matches required skills",
-          "Relevant experience level",
-          "Strong communication indicators",
-        ]
-      : ["Missing specific required skill", "Limited domain depth"];
-    setApplicants((prev) =>
-      prev.map((app) =>
-        app.id === a.id
-          ? { 
-              ...app, 
-              status: qualified ? "Shortlisted" : "Rejected", 
-              fitScore: score, 
-              aiReasons: reasons,
-              screened: true
-            }
-          : app
-      )
-    );
-    setScreening(false);
-    
-    // Auto-show notification panel for shortlisted candidates
-    if (qualified) {
-      setShowNotificationSuccess(true);
-      setTimeout(() => setShowNotificationSuccess(false), 3000);
-    }
+  const jobTitle = (jobId) => {
+    const job = jobs.find((j) => j.id === jobId);
+    return job ? job.title : "—";
   };
 
   const screenBulk = async () => {
-    const ids = Array.from(selectedIds);
-    setBulkScreenOpen(true);
-    setScreening(true);
-    
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setApplicants((prev) =>
-      prev.map((a) =>
-        ids.includes(a.id)
-          ? {
-              ...a,
-              status: "Shortlisted",
-              fitScore: Math.floor(70 + Math.random() * 25),
-              screened: true
-            }
-          : a
-      )
-    );
-    
-    setScreening(false);
-    setShowNotificationSuccess(true);
-    setTimeout(() => {
-      setShowNotificationSuccess(false);
-      setBulkScreenOpen(false);
-    }, 3000);
+    try {
+      
+      if (selectedIds.size === 0) return;
+      setScreening(true);
+      const resp = await axios.patch(`/api/jobs/applications-screen-ai/`, {
+        applications: Array.from(selectedIds),
+        
+      });
+
+      if (resp.data.success) {
+        // Handle successful screening
+        console.log(resp.data.message)
+      }
+    } catch (error) {
+      console.error("Error screening applications:", error);
+    } finally {
+      setScreening(false);
+    }
+  };
+ 
+  const downloadFile = async (url, filename) => {
+    try {
+      const resp = await axios.get(url, { responseType: "blob" });
+
+      if (resp.status < 400) {
+        const url = window.URL.createObjectURL(new Blob([resp.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const sendNotifications = () => {
-    // In a real app, this would connect to your backend email/notification service
-    setShowNotificationSuccess(true);
-    setTimeout(() => setShowNotificationSuccess(false), 3000);
+  const sendNotifications = async () => {
+    try {
+      const shortlisted = applications.filter(
+        (a) => a.status === "Shortlisted"
+      );
+
+      // Send notifications via API
+      await axios.post("/api/notifications/send", {
+        applications: shortlisted.map((app) => app.id),
+        message: notificationMessage,
+        sendEmail: sendEmailNotification,
+      });
+
+      setShowNotificationSuccess(true);
+      setTimeout(() => setShowNotificationSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to send notifications:", error);
+    }
+  };
+
+  const downloadResume = (applicant) => {
+    if (applicant.coverLetter?.f_path) {
+      // Create download link for the resume/cover letter
+      const link = document.createElement("a");
+      link.href = applicant.coverLetter.f_path;
+      link.download = applicant.coverLetter.f_name || "resume.pdf";
+      link.click();
+    }
+  };
+
+  const getApplications = async () => {
+    try {
+      setLoading(true);
+      const resp = await axios.get("/api/jobs/all-applications");
+      if (resp.data.data) {
+        const transformedApps = transformApplications(resp.data.data);
+        setApplications(transformedApps);
+        setJobs(extractJobs(transformedApps));
+      }
+    } catch (error) {
+      console.error("Failed to fetch applications:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleDropdown = (dropdownName) => {
     setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
   };
 
+  useEffect(() => {
+    getApplications();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <span className="ml-2 text-lg">Loading applications...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Applications</h1>
-          <p className="text-gray-600 dark:text-gray-400">AI-powered screening to streamline your hiring process</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Applications
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            AI-powered screening to streamline your hiring process
+          </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           {selectedIds.size > 0 && (
-            <Button 
-              onClick={screenBulk}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={screening}
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Screen Selected ({selectedIds.size})
-            </Button>
+            <>
+              
+              <Button
+                onClick={screenBulk}
+                className="bg-blue-600 hover:bg-blue-700 text-white bg-gradient-to-t from-blue-600 via-purple-600 to-purple-700"
+                disabled={screening}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Screen Selected ({selectedIds.size}) with AI
+              </Button>
+
+              <Button
+                onClick={openBulkStatusChange}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={bulkChangingStatus}
+              >
+                <UserCheck className="h-4 w-4 mr-2" />
+                Change Status ({selectedIds.size})
+              </Button>
+            </>
           )}
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             onClick={() => toggleSelectAllVisible()}
             className="border-gray-300 dark:border-gray-600 dark:text-white"
           >
@@ -292,46 +477,50 @@ const ApplicationsPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Total Applicants</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{applicants.length}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Total Applicants
+          </p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            {applications.length}
+          </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-600 dark:text-gray-400">New</p>
           <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            {applicants.filter(a => a.status === "New").length}
+            {applications.filter((a) => a.status === "submitted").length}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Shortlisted</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Shortlisted
+          </p>
           <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {applicants.filter(a => a.status === "Shortlisted").length}
+            {applications.filter((a) => a.status === "Accepted").length}
+          </p>
+        </div>
+         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+             Rejected
+          </p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+            {applications.filter((a) => a.status === "Rejected").length}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Screening Progress</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Screening Progress
+          </p>
           <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            {Math.round((applicants.filter(a => a.status !== "New").length / applicants.length) * 100)}%
+            {Math.round(
+              (applications.filter((a) => a.status !== "New").length /
+                applications.length) *
+                100
+            )}
+            %
           </p>
         </div>
       </div>
 
-{/* useEffect(()=>{},[selectedJob])
-useEffect(()=>{
-if(selectedJob=="All"){}
-},[selectedJob])
-Impano
-19:44
-const[selectActive, setSelectActive]=useState(false)
-useEffect(()=>{
-if(selectedJob!!="All"){
-setSelectActive(false)
-
-}else{
-setSelectActive(true);
-}
-},[selectedJob])
-
-<button disabled={selectActive>Select All</button>}}*/}
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
         <div className="flex flex-col md:flex-row gap-4">
@@ -346,22 +535,22 @@ setSelectActive(true);
               />
             </div>
           </div>
-          
+
           <div className="flex gap-2 flex-wrap">
             <div className="relative">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex items-center gap-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                onClick={() => toggleDropdown('jobFilter')}
+                onClick={() => toggleDropdown("jobFilter")}
               >
                 <Filter className="h-4 w-4" />
                 Job: {jobFilter === "all" ? "All" : jobTitle(jobFilter)}
                 <ChevronDown className="h-4 w-4" />
               </Button>
-              
-              {openDropdown === 'jobFilter' && (
-                <div 
-                  ref={el => dropdownRefs.current['jobFilter'] = el}
+
+              {openDropdown === "jobFilter" && (
+                <div
+                  ref={(el) => (dropdownRefs.current["jobFilter"] = el)}
                   className="absolute right-0 z-10 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg"
                 >
                   <div className="py-1">
@@ -374,7 +563,7 @@ setSelectActive(true);
                     >
                       All Jobs
                     </button>
-                    {mockJobs.map((job) => (
+                    {jobs.map((job) => (
                       <button
                         key={job.id}
                         onClick={() => {
@@ -390,21 +579,21 @@ setSelectActive(true);
                 </div>
               )}
             </div>
-            
+
             <div className="relative">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex items-center gap-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                onClick={() => toggleDropdown('statusFilter')}
+                onClick={() => toggleDropdown("statusFilter")}
               >
                 <Filter className="h-4 w-4" />
                 Status: {statusFilter === "all" ? "All" : statusFilter}
                 <ChevronDown className="h-4 w-4" />
               </Button>
-              
-              {openDropdown === 'statusFilter' && (
-                <div 
-                  ref={el => dropdownRefs.current['statusFilter'] = el}
+
+              {openDropdown === "statusFilter" && (
+                <div
+                  ref={(el) => (dropdownRefs.current["statusFilter"] = el)}
                   className="absolute right-0 z-10 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg"
                 >
                   <div className="py-1">
@@ -417,33 +606,18 @@ setSelectActive(true);
                     >
                       All Statuses
                     </button>
-                    <button
-                      onClick={() => {
-                        setStatusFilter("New");
-                        setOpenDropdown(null);
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      New
-                    </button>
-                    <button
-                      onClick={() => {
-                        setStatusFilter("Shortlisted");
-                        setOpenDropdown(null);
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Shortlisted
-                    </button>
-                    <button
-                      onClick={() => {
-                        setStatusFilter("Rejected");
-                        setOpenDropdown(null);
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Rejected
-                    </button>
+                    {Object.values(statusMapping).map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => {
+                          setStatusFilter(status);
+                          setOpenDropdown(null);
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {status}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -477,7 +651,10 @@ setSelectActive(true);
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
               {current.map((applicant) => (
-                <tr key={applicant.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr
+                  key={applicant.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <input
@@ -487,13 +664,27 @@ setSelectActive(true);
                         className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mr-3"
                       />
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white">{applicant.name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{applicant.email}</div>
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {applicant.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {applicant.email}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {applicant.phone}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-gray-900 dark:text-white">{jobTitle(applicant.appliedJobId)}</div>
+                    <div className="text-gray-900 dark:text-white">
+                      {applicant.job?.j_title || "—"}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {applicant.job?.company?.c_name ||
+                        applicant.job?.company?.c_description ||
+                        "—"}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge className={statusStyles[applicant.status]}>
@@ -510,6 +701,12 @@ setSelectActive(true);
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
+                      <Link
+                        to={`/recruiter/jobs`}
+                        className="bg-green-100 hover:bg-green-200  dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-200 text-white p-2 rounded-md"
+                      >
+                        View Job
+                      </Link>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -518,31 +715,35 @@ setSelectActive(true);
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      
-                      {applicant.status === "New" && (
+
+                      {applicant.coverLetter && (
                         <Button
-                          onClick={() => screenOne(applicant)}
-                          disabled={screening}
-                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-200"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            downloadFile(
+                              `${
+                                import.meta.env.VITE_SERVER_URL
+                              }/api/files/user_cv/${applicant.applicant.id}`,
+                              "resume.pdf"
+                            )
+                          }
+                          className="  text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                          title="Download Resume"
                         >
-                          {screening && screeningApplicant?.id === applicant.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                          ) : (
-                            <Sparkles className="h-4 w-4 mr-1" />
-                          )}
-                          Screen
+                          <Download className="h-4 w-4" />
                         </Button>
                       )}
-                      
-                      {applicant.status === "Shortlisted" && (
-                        <Button
-                          onClick={sendNotifications}
-                          className="bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-200"
-                        >
-                          <Mail className="h-4 w-4 mr-1" />
-                          Notify
-                        </Button>
-                      )}
+
+                      <Button
+                        onClick={() => changeStatus(applicant)}
+                       variant="ghost"
+                          size="icon"
+                                className="  text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                          title="Change Status"
+                      >
+                        <SquarePen className="h-4 w-4 mr-2" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -555,7 +756,9 @@ setSelectActive(true);
         {current.length === 0 && (
           <div className="text-center py-12">
             <Users className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No applicants found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              No applicants found
+            </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Try adjusting your search or filter criteria
             </p>
@@ -566,8 +769,10 @@ setSelectActive(true);
         <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
           <div className="text-sm text-gray-700 dark:text-gray-300">
             Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
-            <span className="font-medium">{Math.min(startIndex + perPage, filtered.length)}</span> of{" "}
-            <span className="font-medium">{filtered.length}</span> results
+            <span className="font-medium">
+              {Math.min(startIndex + perPage, filtered.length)}
+            </span>{" "}
+            of <span className="font-medium">{filtered.length}</span> results
           </div>
           <div className="flex gap-2">
             <Button
@@ -593,15 +798,21 @@ setSelectActive(true);
       {/* Notification Panel */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Candidate Notification</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+            Candidate Notification
+          </h2>
           <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-            {applicants.filter(a => a.status === "Shortlisted").length} Shortlisted
+            {applications.filter((a) => a.status === "Shortlisted").length}{" "}
+            Shortlisted
           </Badge>
         </div>
-        
+
         <div className="space-y-4">
           <div>
-            <label htmlFor="notificationMessage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              htmlFor="notificationMessage"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Notification Message
             </label>
             <Textarea
@@ -612,7 +823,7 @@ setSelectActive(true);
               className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Switch
@@ -621,14 +832,20 @@ setSelectActive(true);
                 onCheckedChange={setSendEmailNotification}
                 className="mr-2"
               />
-              <label htmlFor="email-notification" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="email-notification"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Send email notification
               </label>
             </div>
-            
-            <Button 
+
+            <Button
               onClick={sendNotifications}
-              disabled={applicants.filter(a => a.status === "Shortlisted").length === 0}
+              disabled={
+                applications.filter((a) => a.status === "Shortlisted")
+                  .length === 0
+              }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Send className="h-4 w-4 mr-2" />
@@ -643,7 +860,9 @@ setSelectActive(true);
         <div className="fixed bottom-4 right-4 z-50">
           <div className="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg shadow-lg flex items-center">
             <CheckCircle2 className="h-5 w-5 mr-2" />
-            <span>Notifications sent successfully to shortlisted candidates!</span>
+            <span>
+              Status changes applied successfully!
+            </span>
           </div>
         </div>
       )}
@@ -654,9 +873,14 @@ setSelectActive(true);
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{viewingApplicant.name}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {viewingApplicant.name}
+                </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {viewingApplicant.email} • {jobTitle(viewingApplicant.appliedJobId)}
+                  {viewingApplicant.email} • {viewingApplicant.phone}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Applied for: {viewingApplicant.job?.j_title}
                 </p>
               </div>
               <Button
@@ -671,26 +895,23 @@ setSelectActive(true);
 
             <div className="p-6 space-y-6">
               <section>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Resume Summary</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  Application Summary
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  {viewingApplicant.resumeSummary || "—"}
+                  {viewingApplicant.resumeSummary}
                 </p>
               </section>
 
               <section>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Application Answers
+                  Cover Letter
                 </h3>
-                <ul className="space-y-3">
-                  {(viewingApplicant.answers || []).map((qa, i) => (
-                    <li key={i}>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{qa.q}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{qa.a}</p>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {viewingApplicant.answers[0]?.a || "No cover letter provided"}
+                </p>
               </section>
-              
+
               {viewingApplicant.aiReasons && (
                 <section>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
@@ -700,12 +921,278 @@ setSelectActive(true);
                     {viewingApplicant.aiReasons.map((reason, i) => (
                       <li key={i} className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                        <span className="text-gray-600 dark:text-gray-400">{reason}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          {reason}
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </section>
               )}
+
+              {viewingApplicant.coverLetter && (
+                <section>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Attachments
+                  </h3>
+                  <Button
+                    onClick={() =>
+                      downloadFile(
+                        `${import.meta.env.VITE_SERVER_URL}/api/files/cover/${
+                          viewingApplicant.coverLetter.id
+                        }`,
+                        "resume.pdf"
+                      )
+                    }
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Cover Letter
+                  </Button>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single Application Status Change Modal */}
+      {changingStatus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 shadow-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Change Application Status</h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setChangingStatus(false);
+                  setNewStatus({ rejected: false, accepted: false, "under-review": false });
+                  setNewStatusNotes("");
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Select New Status</h3>
+                <div className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="under-review"
+                      name="status"
+                      value="under-review"
+                      onChange={() =>
+                        setNewStatus({ "under-review": true, rejected: false, accepted: false })
+                      }
+                      checked={newStatus["under-review"]}
+                      className="text-blue-600"
+                    />
+                    <label htmlFor="under-review" className="text-gray-700 dark:text-gray-300">Under Review</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="accept"
+                      name="status"
+                      value="accepted"
+                      onChange={() =>
+                        setNewStatus({ rejected: false, accepted: true, "under-review": false })
+                      }
+                      checked={newStatus.accepted}
+                      className="text-blue-600"
+                    />
+                    <label htmlFor="accept" className="text-gray-700 dark:text-gray-300">Accept</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="reject"
+                      name="status"
+                      value="rejected"
+                      onChange={() =>
+                        setNewStatus({ rejected: true, accepted: false , "under-review": false })
+                      }
+                      checked={newStatus.rejected}
+                      className="text-blue-600"
+                    />
+                    <label htmlFor="reject" className="text-gray-700 dark:text-gray-300">Reject</label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Notes</h3>
+                <textarea
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                  rows="4"
+                  value={newStatusNotes}
+                  onChange={(e) => setNewStatusNotes(e.target.value)}
+                  placeholder="Add notes about this status change..."
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setChangingStatus(false);
+                    setNewStatus({ rejected: false, accepted: false, "under-review": false });
+                    setNewStatusNotes("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleChangingApplicationStatus}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={!newStatus.accepted && !newStatus.rejected && !newStatus["under-review"]}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Status Change Modal */}
+      {bulkStatusChangeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                Change Status for {selectedIds.size} Applications
+              </h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setBulkStatusChangeOpen(false);
+                  setBulkNewStatus({ rejected: false, accepted: false, "under-review": false });
+                  setBulkStatusNotes("");
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Select New Status</h3>
+                <div className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="bulk-under-review"
+                      name="bulkStatus"
+                      value="under-review"
+                      onChange={() =>
+                        setBulkNewStatus({ "under-review": true, rejected: false, accepted: false })
+                      }
+                      checked={bulkNewStatus["under-review"]}
+                      className="text-blue-600"
+                    />
+                    <label htmlFor="bulk-under-review" className="text-gray-700 dark:text-gray-300">Under Review</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="bulk-accept"
+                      name="bulkStatus"
+                      value="accepted"
+                      onChange={() =>
+                        setBulkNewStatus({ rejected: false, accepted: true, "under-review": false })
+                      }
+                      checked={bulkNewStatus.accepted}
+                      className="text-blue-600"
+                    />
+                    <label htmlFor="bulk-accept" className="text-gray-700 dark:text-gray-300">Accept</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="bulk-reject"
+                      name="bulkStatus"
+                      value="rejected"
+                      onChange={() =>
+                        setBulkNewStatus({ rejected: true, accepted: false, "under-review": false })
+                      }
+                      checked={bulkNewStatus.rejected}
+                      className="text-blue-600"
+                    />
+                    <label htmlFor="bulk-reject" className="text-gray-700 dark:text-gray-300">Reject</label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Notes</h3>
+                <textarea
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                  rows="4"
+                  value={bulkStatusNotes}
+                  onChange={(e) => setBulkStatusNotes(e.target.value)}
+                  placeholder="Add notes that will be applied to all selected applications..."
+                />
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Selected Applications:</h4>
+                <div className="max-h-32 overflow-y-auto">
+                  {applications
+                    .filter(app => selectedIds.has(app.id))
+                    .map(app => (
+                      <div key={app.id} className="flex justify-between items-center py-1 text-sm">
+                        <span className="text-gray-700 dark:text-gray-300">{app.name}</span>
+                        <Badge className={statusStyles[app.status] + " text-xs"}>
+                          {app.status}
+                        </Badge>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setBulkStatusChangeOpen(false);
+                    setBulkNewStatus({ rejected: false, accepted: false, "under-review": false });
+                    setBulkStatusNotes("");
+                  }}
+                  disabled={bulkChangingStatus}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleBulkStatusChange}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  disabled={bulkChangingStatus || (!bulkNewStatus.accepted && !bulkNewStatus.rejected && !bulkNewStatus["under-review"])}
+                >
+                  {bulkChangingStatus ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Update {selectedIds.size} Applications
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -728,9 +1215,9 @@ setSelectActive(true);
                 <span className="text-sm text-gray-900 dark:text-white">
                   Successfully screened {selectedIds.size} applicants
                 </span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setBulkScreenOpen(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
