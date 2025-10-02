@@ -254,7 +254,7 @@ const JobDialog = ({ job, isOpen, onClose }) => {
                   Company Name
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">
-                  {job.company?.c_admin?.c_name|| "N/A"}
+                  {job.company?.c_admin?.c_name || "N/A"}
                 </p>
               </div>
               <div>
@@ -446,9 +446,7 @@ const JobseekerJobs = () => {
     .slice(0, 3); // Show top 3 recommendations
 
   const companies = [
-    ...new Set(
-      jobs.map((job) => job.company?.c_name|| "Unknown Company")
-    ),
+    ...new Set(jobs.map((job) => job.company?.c_name || "Unknown Company")),
   ];
   const locations = [
     ...new Set(jobs.map((job) => job.j_location).filter(Boolean)),
@@ -460,17 +458,14 @@ const JobseekerJobs = () => {
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
       job.j_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company?.c_name
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      job.company?.c_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesLocation =
       !locationFilter || job.j_location === locationFilter;
     const matchesJobType =
       !jobTypeFilter || job.j_employement_type === jobTypeFilter;
     const matchesCompany =
-      !selectedCompany ||
-      job.company?.c_name === selectedCompany;
+      !selectedCompany || job.company?.c_name === selectedCompany;
 
     return matchesSearch && matchesLocation && matchesJobType && matchesCompany;
   });
@@ -524,13 +519,11 @@ const JobseekerJobs = () => {
                     onClick={() => openJobDialog(job)}
                   >
                     <div className="flex items-start gap-4">
-                      <img
+                      {/* <img
                         src={getCompanyLogo(job.company)}
-                        alt={`${
-                          job.company?.c_name || "Company"
-                        } logo`}
+                        alt={`${job.company?.c_name || "Company"} logo`}
                         className="w-16 h-16 rounded-full object-cover border border-gray-300 dark:border-gray-600"
-                      />
+                      /> */}
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                           <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -549,8 +542,7 @@ const JobseekerJobs = () => {
                           </span>
                         </div>
                         <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1">
-                          {job.company?.c_name ||
-                            "Unknown Company"}
+                          {job.company?.c_name || "Unknown Company"}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {job.j_location || "Location not specified"}
@@ -585,38 +577,39 @@ const JobseekerJobs = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="mt-4 flex space-x-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openJobDialog(job);
-                            }}
-                            className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 
-                              text-gray-800 dark:text-gray-200 font-medium py-2 px-4 rounded-lg 
-                              transition-colors duration-300"
-                          >
-                            View Details
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/jobs/${job.id}`);
-                            }}
-                            disabled={job.j_status !== "active"}
-                            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors duration-300 ${
-                              job.j_status === "active"
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                            }`}
-                          >
-                            Apply
-                          </button>
-                        </div>
                       </div>
                     </div>
+                           <div className="mt-4 flex space-x-2 justify-between">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openJobDialog(job);
+                  }}
+                  className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 
+                              text-gray-800 dark:text-gray-200 font-medium py-2 px-4 rounded-lg 
+                              transition-colors duration-300"
+                >
+                  View Details
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/jobs/${job.id}`);
+                  }}
+                  disabled={job.j_status !== "active"}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors duration-300 ${
+                    job.j_status === "active"
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Apply
+                </button>
+              </div>
                   </div>
                 ))}
               </div>
+       
             </div>
           )}
 
@@ -715,13 +708,11 @@ const JobseekerJobs = () => {
                 onClick={() => openJobDialog(job)}
               >
                 <div className="flex items-start gap-4">
-                  <img
+                  {/* <img
                     src={getCompanyLogo(job.company)}
-                    alt={`${
-                      job.company?.c_name || "Company"
-                    } logo`}
+                    alt={`${job.company?.c_name || "Company"} logo`}
                     className="w-16 h-16 rounded-full object-cover border border-gray-300 dark:border-gray-600"
-                  />
+                  /> */}
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -777,7 +768,11 @@ const JobseekerJobs = () => {
                       </div>
                     </div>
 
-                    <div className="mt-4 flex space-x-2">
+                  
+                  </div>
+                
+                </div>
+                    <div className="mt-4 flex space-x-2 justify-between">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -804,8 +799,6 @@ const JobseekerJobs = () => {
                         Apply
                       </button>
                     </div>
-                  </div>
-                </div>
               </div>
             ))}
           </div>

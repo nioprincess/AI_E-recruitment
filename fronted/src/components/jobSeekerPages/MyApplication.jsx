@@ -60,7 +60,7 @@ const Applications = () => {
         );
       case "rejected":
         return (
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         );
@@ -109,7 +109,7 @@ const Applications = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-blue-950 dark:bg-gray-800 flex items-center justify-center">
                       <span className="text-lg font-medium text-gray-500 dark:text-gray-400">
                         {application?.job.company?.c_admin?.u_first_name?.charAt(0)}
                       </span>
@@ -149,15 +149,15 @@ const Applications = () => {
               <div className="mt-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between">
                   <div className="flex items-center mb-2 md:mb-0">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusStyles[application.stages.filter(s=>s.s_completed===false)[0]?.s_name]}`}>
+                    <span className={`inline-flex items-center px-1 py-1 rounded-full text-sm font-medium  ${statusStyles[application.stages.filter(s=>s.s_completed===false)[0]?.s_name]}`}>
                       {getStatusIcon(application.stages.filter(s=>s.s_completed===false)[0]?.s_name  )}
-                      {statusLabels[application.stages.filter(s=>s.s_completed===false)[0]?.s_name  ]}
+                      {/* {statusLabels[application.stages.filter(s=>s.s_completed===false)[0]?.s_name  ]} */}
                     </span>
                    {application.stages.filter(s=>s.s_completed===false)[0]?.s_notes?.length>0 &&   <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">
                       Comment: {application.stages.filter(s=>s.s_completed===false)[0]?.s_notes}
                     </span>}
                     <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">
-                      Last updated: {new Date(application?.updated_at).toLocaleDateString()}
+                     Updated: {new Date(application?.updated_at).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -169,15 +169,15 @@ const Applications = () => {
                     )}
                     <button 
                       onClick={() => navigate(`/jobs/${application?.job?.id}`)}
-                      className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                      className="px-3 py-1 mx-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer"
                     >
                       View Job
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    {/* <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                       </svg>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
@@ -208,7 +208,7 @@ const Applications = () => {
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                     <span>Applied</span>
                     <span>Under Review</span>
-                    <span>Interview</span>
+                    <span>Interview/Exam</span>
                     <span>Decision</span>
                   </div>
                 </div>

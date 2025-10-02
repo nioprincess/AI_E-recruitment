@@ -20,7 +20,6 @@ import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 
 import useUserAxios from "../../../hooks/useUserAxios";
-import { set } from "react-hook-form";
 import { Link } from "react-router-dom";
 
 const CandidateExamManagement = () => {

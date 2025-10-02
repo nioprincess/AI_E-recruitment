@@ -7,12 +7,16 @@ import {
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import useUser from "../../hooks/useUser";
+import useNotifications from "../../hooks/useNotifications";
 
 const Navbar1 = () => {
   const [isDark, setIsDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const{notifications}= useNotifications()
+  const [unreadNotifications, setUnreadNotifications]= useState(0)
+
   const user= useUser()
 
   const navigate = useNavigate();
@@ -51,11 +55,28 @@ const Navbar1 = () => {
     { label: "My Applications", href: "/my-applications" },
       { label: "My Resumes", href: "/my-resumes" },
       { label: "My Exams", href: "/my-exams" },
-    { label: "Notifications", href: "/notifications" },
+   
   ];
 
   const profilePicture =
     `https://ui-avatars.com/api/?name=${user.firstname +" "+user.middlename+ " "+ user.lastname}&background=random`;
+   
+     useEffect(() => {
+       // Process notifications from the hook
+       const processNotifications = () => {
+         try {
+           if (notifications && Array.isArray(notifications)) {
+             const unreadNotifications = notifications.filter(notif => !notif.n_is_read).length;
+             setUnreadNotifications(unreadNotifications)
+             
+           }
+         } catch (error) {
+           console.error("Error processing notifications:", error);
+         }  
+       };
+   
+       processNotifications();
+     }, [notifications]);
 
   return (
     <nav className="bg-white dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md fixed w-full z-50">
@@ -78,6 +99,16 @@ const Navbar1 = () => {
               {item.label}
             </Link>
           ))}
+
+                <Link
+              key={"Notifications"}
+              to={"/notifications"}
+              className="hover:bg-gray-200 dark:hover:text-black-100 px-3 py-2 rounded-md dark:text-gray-200"
+            >
+              Notifications {unreadNotifications>0&&<div className="badge badge-secondary">{unreadNotifications}</div>}
+
+            </Link>
+
 
           {/* ✅ If logged in → show dropdown */}
           {isLoggedIn ? (

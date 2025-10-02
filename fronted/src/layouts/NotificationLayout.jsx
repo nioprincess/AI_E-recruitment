@@ -8,11 +8,23 @@ import useUserAxios from "../hooks/useUserAxios";
 function NotificationLayout() {
   const { setToastMessage } = useToast();
   const {connectWebSocket} = useSocket();
-  const{notifications,setNotifications}= useNotifications()
+  const{setNotifications}= useNotifications()
+  const axios= useUserAxios()
  
-  
+  const getNotifications= async()=>{
+    try {
+      const resp= await axios.get("/api/notifications/my-notifications/")
+      if(resp.data.success){
+        setNotifications(resp.data.data)
+      }
+      
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   useEffect(() => {
+    getNotifications()
     const socket=connectWebSocket("/ws/notification/");
     socket.onmessage = (event ) => {
       console.log(event)

@@ -795,65 +795,7 @@ const ApplicationsPage = () => {
         </div>
       </div>
 
-      {/* Notification Panel */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-            Candidate Notification
-          </h2>
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-            {applications.filter((a) => a.status === "Shortlisted").length}{" "}
-            Shortlisted
-          </Badge>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="notificationMessage"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              Notification Message
-            </label>
-            <Textarea
-              id="notificationMessage"
-              value={notificationMessage}
-              onChange={(e) => setNotificationMessage(e.target.value)}
-              rows={3}
-              className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Switch
-                id="email-notification"
-                checked={sendEmailNotification}
-                onCheckedChange={setSendEmailNotification}
-                className="mr-2"
-              />
-              <label
-                htmlFor="email-notification"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Send email notification
-              </label>
-            </div>
-
-            <Button
-              onClick={sendNotifications}
-              disabled={
-                applications.filter((a) => a.status === "Shortlisted")
-                  .length === 0
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Notify Shortlisted Candidates
-            </Button>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Success Notification */}
       {showNotificationSuccess && (
