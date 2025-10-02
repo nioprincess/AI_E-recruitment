@@ -116,13 +116,14 @@ class ExamQuestion(models.Model):
 
 
 class InterviewObservation(models.Model):
-    e = models.OneToOneField(ApplicationExam, models.DO_NOTHING, null=True)
-    o_punctuality_score = models.DecimalField(max_digits=5, decimal_places=2)
-    o_dressing_code_ok = models.BooleanField()
-    o_gestures_detected = models.TextField()
-    o_face_expressions = models.TextField()
-    o_communitication_clarity = models.IntegerField()
-    o_professionalism_score = models.DecimalField(max_digits=5, decimal_places=2)
+    e = models.OneToOneField(ApplicationExam, models.CASCADE, null=True)
+    o_punctuality_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    o_dressing_code_ok = models.BooleanField(default=False)
+    o_clothing= models.TextField(blank=True, null=True)
+    o_gestures_detected = models.TextField(blank=True, null=True)
+    o_face_expressions = models.TextField(blank=True,null=True)
+    o_communitication_clarity = models.IntegerField(default=0)
+    o_professionalism_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 

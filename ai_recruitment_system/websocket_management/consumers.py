@@ -813,8 +813,9 @@ class ObservationConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         image_data= data.get("image_data")
         request_id= data.get("id")
+        exam_id= data.get("exam_id")
         user = self.scope["user"]
-        process_image_data.delay(image_data, user.id, request_id)
+        process_image_data.delay(image_data, user.id,exam_id, request_id)
 
      
 

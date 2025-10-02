@@ -38,10 +38,10 @@ def process_candidate(candidate_id, user_id):
 
 
 @shared_task
-def process_image_data(imageData, user_id, request_id):
+def process_image_data(imageData, user_id,exam_id, request_id):
      
-    detections = process_base64_image(imageData)
-    detections["id"]= request_id
+    detections = process_base64_image(imageData, exam_id)
+    detections["id"]= request_id,
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
     f"user_{user_id}_observation",

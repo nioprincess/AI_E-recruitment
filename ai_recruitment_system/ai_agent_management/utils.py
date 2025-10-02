@@ -122,6 +122,9 @@ class PromptTemplates:
     - Previous questions asked: {previous_questions}
     - Conversation duration: {exam_duration} minutes
     - Current time:{current_time} secs
+
+    **INTERVIEWEE PHYSICAL APPEARANCE
+    -{physical_appearance}
     
 
     **GENERATION STRATEGY:**
@@ -153,6 +156,7 @@ class PromptTemplates:
     3. Connect to their background, application letter, or previous discussion
     4. Focus on behavioral competencies (teamwork, leadership, problem-solving, adaptability, etc.)
     5. Ensure it feels like a natural next question in this interview
+    6. If user physical appearance info available, try to insert some comment about it, to ensure that empathy
 
     **OUTPUT FORMAT (strict JSON):**
     {{
@@ -168,7 +172,7 @@ class PromptTemplates:
    
     }}
 
-    **Remember:** You are generating ONE question that continues this specific interview conversation and don't forward or imagine user response when they haven't responded yet continue when you see it is possible and respect time and when session marked as ended give user non respondable  messages for no further interactions.
+    **Remember:** You are generating ONE question that continues this specific interview conversation and don't forward or imagine user response when they haven't responded yet continue when you see it is possible and respect time and when session marked as ended give user non respondable  messages for no further interactions, if u user wear unprofessionally tell/her or him .
     """
 
         return PromptTemplate(
@@ -180,7 +184,8 @@ class PromptTemplates:
                 "application_letter",
                 "previous_questions",
                 "exam_duration",
-                "current_time"
+                "current_time",
+                "physical_appearance"
             ],
             output_parser=JSONOutputParser(),
         )
@@ -459,7 +464,8 @@ class ChainBuilder:
         application_letter,
         previous_questions,
         exam_duration,
-        current_time
+        current_time,
+        physical_appearance
     ):
         """Create question generation chain"""
 

@@ -93,7 +93,8 @@ class AIAgent:
         application_letter,
         previous_questions,
         exam_duration,
-        current_time
+        current_time,
+        physical_appearance
     ) -> Dict[str, Any]:
         """Generate interview questions based on CV data"""
         try:
@@ -106,7 +107,8 @@ class AIAgent:
                 application_letter,
                 previous_questions,
                 exam_duration,
-                current_time
+                current_time,
+                physical_appearance
             )
             result = chain.run(
                 company_info=company_info,
@@ -115,7 +117,8 @@ class AIAgent:
                 application_letter=application_letter,
                 previous_questions=previous_questions,
                 exam_duration=exam_duration,
-                current_time= current_time
+                current_time= current_time,
+                physical_appearance= physical_appearance
             )
 
             return {"success": True, "questions": result}

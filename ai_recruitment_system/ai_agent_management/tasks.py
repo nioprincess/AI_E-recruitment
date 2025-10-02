@@ -6,7 +6,7 @@ from job_management.models import Application, ApplicationStage
 import json
 from django.utils import timezone
 import time
-from examination_management.models import ExamQuestion, ApplicationExam
+from examination_management.models import ExamQuestion, ApplicationExam, InterviewObservation
 import re
 from company_management.models import Company
 from examination_management.models import InterviewQuestion, InterviewResponse
@@ -429,6 +429,7 @@ def generate_next_interview_question(applicationExamId, user_id) -> dict:
     try:
 
         applicationExam = ApplicationExam.objects.get(id=applicationExamId)
+        examObservation,_= InterviewObservation.objects.get_or_create(e=applicationExam)
         exam_duration = applicationExam.e_id.e_duration
         app = applicationExam.a_id
         user = User.objects.get(id=user_id)
@@ -453,6 +454,10 @@ def generate_next_interview_question(applicationExamId, user_id) -> dict:
                 },
             }
             conversation.append(convo)
+        user_physical_appearance= {
+            "clothing": examObservation.o_clothing,
+            "emotions": examObservation.o_face_expressions
+        }
      
         result = agent.generate_next_interview_question(
             company_info=company_info,
@@ -461,7 +466,8 @@ def generate_next_interview_question(applicationExamId, user_id) -> dict:
             application_letter=application_letter_content,
             previous_questions=json.dumps(conversation),
             exam_duration=exam_duration,
-            current_time=applicationExam.current_time
+            current_time=applicationExam.current_time,
+            physical_appearance= json.dumps(user_physical_appearance)
         )
         if result["success"] == True:
             parsed_data = parse_questions_data(result)
