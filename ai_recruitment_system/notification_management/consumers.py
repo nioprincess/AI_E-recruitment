@@ -3,6 +3,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 
 class NotificationConsumer(AsyncWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.group_name = 'notification_room'
     async def connect(self):
         user = self.scope["user"]
         if user.is_authenticated:

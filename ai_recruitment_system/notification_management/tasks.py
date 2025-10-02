@@ -15,7 +15,7 @@ def send_notification( message, n_type='info', is_read=False, c_id=None,user_id=
         Notification.objects.create(u_id=user, n_message=message, n_type=n_type, n_is_read=is_read, c_id=company)
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            f"user_{user_id}", {
+            f"user_{user_id}_notification", {
                 "type": "notify",
                 "message": message
             }

@@ -96,7 +96,7 @@ class ExamViewSet(viewsets.ModelViewSet):
             )
         else:
 
-            exams = ApplicationExam.objects.filter(a_id__u_id=user)
+            exams = ApplicationExam.objects.filter(a_id__u_id=user, a_id__status="accepted")
             serializer = ApplicationExamSerializer(exams, many=True)
             return Response(
                 {

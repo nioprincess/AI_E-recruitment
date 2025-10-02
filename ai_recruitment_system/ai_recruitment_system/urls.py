@@ -8,7 +8,8 @@ urlpatterns = [
     path('api/companies/', include('company_management.urls')),
     path('api/files/', include('file_management.urls')),
     path('api/jobs/', include('job_management.urls')),
-    path('api/examination/', include("examination_management.urls"))
+    path('api/examination/', include("examination_management.urls")),
+    path('api/notifications/', include("notification_management.urls"))
    
    
 ]

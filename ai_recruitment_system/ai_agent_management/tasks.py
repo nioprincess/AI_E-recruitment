@@ -11,6 +11,7 @@ import re
 from company_management.models import Company
 from examination_management.models import InterviewQuestion, InterviewResponse
 from websocket_management.utils import process_ai_response
+from notification_management.tasks import send_notification
 
 agent = AIAgent()
 
@@ -32,7 +33,6 @@ def parse_cv_task(user_id, cv_text: str, use_fast_model: bool = False) -> dict:
         print(f"Error parsing CV for user {user_id}: {str(e)}")
         return {"success": False, "error": str(e)}
 
-
 @shared_task
 def screen_candidates_applications(
     application_ids, use_fast_model: bool = False
@@ -42,13 +42,14 @@ def screen_candidates_applications(
         applications_data = []
         applications = Application.objects.filter(
             id__in=application_ids
-        ).select_related("u_id")
+        ).select_related("u_id", "j_id")
         for app in applications:
             user = app.u_id
             cv_content = Cv.objects.filter(user_id=user).first()
             application_letter_content = app.a_cover_letter_content
             job_requirements = app.j_id.j_requirements if app.j_id else ""
             job_description = app.j_id.j_description if app.j_id else ""
+            job_title = app.j_id.j_title if app.j_id else "the job"
 
             if not cv_content or not application_letter_content:
                 continue
@@ -61,6 +62,7 @@ def screen_candidates_applications(
                     "application_letter": application_letter_content,
                     "job_requirements": job_requirements,
                     "job_description": job_description,
+                    "job_title": job_title,
                 }
             )
         print(f"Applications data for screening: {applications_data}")
@@ -69,16 +71,21 @@ def screen_candidates_applications(
         print(f"Screening result: {result}")
 
         if result["success"]:
-            print(f"Screening result: {result }")
+            print(f"Screening result: {result}")
             json_str = result["parsed_data"].strip("```json\n").strip("```")
             parsed_list = json.loads(json_str)
             print(f"Parsed screening result: {parsed_list}")
+            
             for res in parsed_list:
                 app_id = res.get("application_id")
                 decision = res.get("decision")
                 reasons = res.get("reasons", "")
+                
                 try:
                     application = Application.objects.get(id=app_id)
+                    user = application.u_id
+                    job_title = application.j_id.j_title if application.j_id else "the job"
+                    
                     application.status = (
                         "accepted" if decision == "accepted" else "rejected"
                     )
@@ -119,10 +126,32 @@ def screen_candidates_applications(
                             s_started_at=timezone.now(),
                             s_ended_at=None,
                         )
+
+                    if decision == "accepted":
+                        message = f"Congratulations! Your application for '{job_title}' has been accepted. {reasons if reasons else 'Your qualifications match our requirements.'}"
+                        n_type = "application_accepted"
+                    else:
+                        message = f"Your application for '{job_title}' was not successful at this time. {reasons if reasons else 'Thank you for your interest.'}"
+                        n_type = "application_rejected"
+
+                    send_notification.delay(
+                        message=message,
+                        n_type=n_type,
+                        is_read=False,
+                        user_id=user.id,
+                        c_id=application.j_id.c_id.id if application.j_id and application.j_id.c_id else None,
+                        broadcast=False,   
+                    )
+                    
+                    print(f"Sent {decision} notification to user {user.id} for application {app_id}")
+
                 except Application.DoesNotExist:
                     print(f"Application with id {app_id} does not exist.")
                 except Exception as e:
                     print(f"Error updating application {app_id}: {str(e)}")
+ 
+
+        return {"success": True, "processed_applications": len(parsed_list)}
 
     except Exception as e:
         print(f"Error screening applications {application_ids}: {str(e)}")
@@ -135,7 +164,9 @@ def generate_exam_questions(application_exam_mapping, exam_type) -> dict:
     try:
         applications_data = []
         applications = Application.objects.filter(
-            id__in=[mapping[0] for mapping in application_exam_mapping]
+            id__in=[mapping[0] for mapping in application_exam_mapping],
+            status="accepted"
+
         ).select_related("u_id")
 
         for app in applications:
@@ -370,7 +401,7 @@ def extract_questions_from_truncated_json(json_str, app_id):
 def process_questions_for_application(parsed_data, app_exam_tuple):
     """Process questions for a specific application"""
     try:
-        application = Application.objects.get(id=app_exam_tuple[0])
+        application = Application.objects.get(id=app_exam_tuple[0], status="accepted")
         application.status = "exam_generated"
         application.save()
 
@@ -428,7 +459,7 @@ def generate_next_interview_question(applicationExamId, user_id) -> dict:
     """Celery task to generate exam questions based on application data"""
     try:
 
-        applicationExam = ApplicationExam.objects.get(id=applicationExamId)
+        applicationExam = ApplicationExam.objects.get(id=applicationExamId, a_id__status="accepted")
         examObservation,_= InterviewObservation.objects.get_or_create(e=applicationExam)
         exam_duration = applicationExam.e_id.e_duration
         app = applicationExam.a_id
