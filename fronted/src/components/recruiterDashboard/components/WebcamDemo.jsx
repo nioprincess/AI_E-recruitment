@@ -21,6 +21,8 @@ export default function WebcamDemo({
   lastFaceMessageTime,
   setLastFaceMessageTime,
   setTextToSpeak,
+  interviewStarted,
+  examId
 }) {
   const { webcamRef, boundingBox, isLoading, detected, facesDetected } =
     useFaceDetection({
@@ -37,9 +39,7 @@ export default function WebcamDemo({
   useEffect(() => {
     if (!webcamRef.current) return;
 
-    if (!socket) {
-      setSocket(connectWebSocket("/ws/observation/"));
-    }
+    const mySocket= connectWebSocket("/ws/observation/")
 
     const captureInterval = setInterval(() => {
       const imageSrc = webcamRef.current.getScreenshot();
@@ -47,13 +47,13 @@ export default function WebcamDemo({
         const id = uuidv4();
         setIsAnalyzing(true);
         setAnalyzingId(id);
-        // socket.send(JSON.stringify({ image_data: imageSrc, id }));
+        mySocket.send(JSON.stringify({ image_data: imageSrc, id:id, exam_id:examId }));
       }
-    }, 2000);
+    }, 30000);
 
     return () => {
       clearInterval(captureInterval);
-      socket?.close();
+      mySocket?.close();
     };
   }, [
     socket,
@@ -74,7 +74,7 @@ export default function WebcamDemo({
       facesDetected === 0  &&
       !isLoading &&
       speechStatus !== "started" &&
-      now - lastFaceMessageTime > cooldownPeriod
+      now - lastFaceMessageTime > cooldownPeriod  
     ) {
       setTextToSpeak(" ");
       setTimeout(() => {
@@ -91,6 +91,7 @@ export default function WebcamDemo({
     speechStatus,
     setTextToSpeak,
     setLastFaceMessageTime,
+    interviewStarted
   ]);
 
   return (

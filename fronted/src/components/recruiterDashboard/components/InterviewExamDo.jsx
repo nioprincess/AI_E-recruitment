@@ -71,6 +71,7 @@ function InterviewExamDo() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzingId, setAnalyzingId] = useState(null);
   const [lastFaceMessageTime, setLastFaceMessageTime] = useState(0);
+  const [interviewStarted, setInterviewStarted] = useState(false);
   const waitingTime = 60 * 60 * 1000;
   const {
     transcript,
@@ -141,14 +142,6 @@ function InterviewExamDo() {
     [setDevices]
   );
 
-  const switchCamera = () => {
-    if (deviceNo === 0) {
-      setDeviceNo(1);
-    } else if (deviceNo === 1) {
-      setDeviceNo(0);
-    }
-  };
-
   const [facingMode, setFacingMode] = useState(FACING_MODE_ENVIRONMENT);
   const handleClick = useCallback(() => {
     setFacingMode((prevState) =>
@@ -170,13 +163,18 @@ function InterviewExamDo() {
   };
 
   const startExam = async () => {
+    setTextToSpeak(
+      "Please wait for the interviewer. The session will begin shortly."
+    );
     try {
       const resp = await axios.patch(
         `/api/examination/application-exams/${id}/`,
         { exam_started: true }
       );
       if (resp.status < 400) {
+        setInterviewStarted(true);
         setExamStarted(true);
+
         getQuestion();
       }
     } catch (error) {
@@ -368,6 +366,7 @@ function InterviewExamDo() {
     }, 1000);
     return () => {
       clearInterval(intervalId);
+    
     };
   }, []);
 
@@ -379,7 +378,7 @@ function InterviewExamDo() {
         const clothing = currentObservation?.clothing;
 
         const face = emotions?.bbox;
-        console.log(clothing);
+        console.log(observations);
         setFaceLocation(face);
 
         setIsAnalyzing(false);
@@ -433,44 +432,45 @@ function InterviewExamDo() {
   }, [speechStatus]);
 
   useEffect(() => {
-  let isMounted = true;
+    let isMounted = true;
 
-  const controlSpeechRecognition = async () => {
-    if (!isMounted) return;
+    const controlSpeechRecognition = async () => {
+      if (!isMounted) return;
 
-    try {
-      if ((isAiTalking || isProcessing) && listening) {
-        console.log('Stopping speech recognition - AI talking or processing');
-        await SpeechRecognition.stopListening();
-        
-        // Verify it actually stopped
-        setTimeout(() => {
-          if (isMounted && listening) {
-            console.warn('Speech recognition still listening, forcing stop');
-            SpeechRecognition.abortListening();
-          }
-        }, 500);
-      } 
-      else if (!isAiTalking && !isProcessing && !listening) {
-        console.log('Starting speech recognition - AI silent and not processing');
-        await new Promise(resolve => setTimeout(resolve, 200));
-        await SpeechRecognition.startListening({
-          continuous: true,
-          language: "en-US",
-          interimResults: true,
-        });
+      try {
+        if ((isAiTalking || isProcessing) && listening) {
+          console.log("Stopping speech recognition - AI talking or processing");
+          await SpeechRecognition.stopListening();
+
+          // Verify it actually stopped
+          setTimeout(() => {
+            if (isMounted && listening) {
+              console.warn("Speech recognition still listening, forcing stop");
+              SpeechRecognition.abortListening();
+            }
+          }, 500);
+        } else if (!isAiTalking && !isProcessing && !listening) {
+          console.log(
+            "Starting speech recognition - AI silent and not processing"
+          );
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          await SpeechRecognition.startListening({
+            continuous: true,
+            language: "en-US",
+            interimResults: true,
+          });
+        }
+      } catch (error) {
+        console.error("Speech recognition control error:", error);
       }
-    } catch (error) {
-      console.error('Speech recognition control error:', error);
-    }
-  };
+    };
 
-  controlSpeechRecognition();
+    controlSpeechRecognition();
 
-  return () => {
-    isMounted = false;
-  };
-}, [isAiTalking, isProcessing, listening]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isAiTalking, isProcessing, listening]);
 
   // useEffect(() => {
   //   if (isAiTalking || isProcessing) {
@@ -483,7 +483,6 @@ function InterviewExamDo() {
   //     });
   //   }
   // }, [isAiTalking, isProcessing]);
-  
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -512,7 +511,7 @@ function InterviewExamDo() {
   }, [examEnded]);
 
   useEffect(() => {
-    const silenceTimeout = 8000;
+    const silenceTimeout = 4000;
     const interval = setInterval(() => {
       if (Date.now() - lastSpokenTime > silenceTimeout && liveCaption.trim()) {
         if (!isProcessing) {
@@ -700,9 +699,12 @@ function InterviewExamDo() {
               </div>
               <ArrowLeftRight className="text-info" />
               <div className="flex justify-between gap-2">
-                <span>AI Interviewer </span> <Speech className={`${
+                <span>AI Interviewer </span>{" "}
+                <Speech
+                  className={`${
                     isAiTalking > 0 && "animate-ping text-red-500"
-                  }`}/>
+                  }`}
+                />
               </div>
               {/* {JSON.stringify(observations)} */}
             </div>
@@ -714,7 +716,7 @@ function InterviewExamDo() {
               Submit Exam
             </button> */}
             <div className="flex items-center justify-between gap-2">
-              {listening && <AudioLines className="animate-pulse text-info" />}
+              {listening && <AudioLines className="animate-pulse text-info"  />}
 
               <div
                 className={`text-xl font-mono font-bold ${
@@ -740,61 +742,56 @@ function InterviewExamDo() {
             )}
           </div>
           <div>
-             
-              <div
-                style={{ width: 500, height: 500, position: "relative" }}
-                className="px-5"
-              >
-                <WebcamDemo
-                  socket={socket}
-                  setSocket={setSocket}
-                  connectWebSocket={connectWebSocket}
-                  isAnalyzing={isAnalyzing}
-                  setIsAnalyzing={setIsAnalyzing}
-                  analyzingId={analyzingId}
-                  setAnalyzingId={setAnalyzingId}
-                  isAiTalking={isAiTalking}
-                  speechStatus={speechStatus}
-                  lastFaceMessageTime={lastFaceMessageTime}
-                  setLastFaceMessageTime={setLastFaceMessageTime}
-                  setTextToSpeak={setTextToSpeak}
+            <div
+              style={{ width: 500, height: 500, position: "relative" }}
+              className="px-5"
+            >
+              <WebcamDemo
+                socket={socket}
+                setSocket={setSocket}
+                connectWebSocket={connectWebSocket}
+                isAnalyzing={isAnalyzing}
+                setIsAnalyzing={setIsAnalyzing}
+                analyzingId={analyzingId}
+                setAnalyzingId={setAnalyzingId}
+                isAiTalking={isAiTalking}
+                speechStatus={speechStatus}
+                lastFaceMessageTime={lastFaceMessageTime}
+                setLastFaceMessageTime={setLastFaceMessageTime}
+                setTextToSpeak={setTextToSpeak}
+                examId={id}
+              />
+
+              {boundingBox.map((box, index) => (
+                <div
+                  key={index}
+                  style={{
+                    position: "absolute",
+                    left: `${box.xCenter * 100}%`,
+                    top: `${box.yCenter * 100}%`,
+                    width: `${box.width * 100}%`,
+                    height: `${box.height * 100}%`,
+                    border: "3px solid #00ff00",
+                    borderRadius: "8px",
+                    boxShadow: "0 0 10px rgba(0, 255, 0, 0.5)",
+                    zIndex: 10,
+                    pointerEvents: "none",
+                  }}
                 />
-
-                {boundingBox.map((box, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      position: "absolute",
-                      left: `${box.xCenter * 100}%`,
-                      top: `${box.yCenter * 100}%`,
-                      width: `${box.width * 100}%`,
-                      height: `${box.height * 100}%`,
-                      border: "3px solid #00ff00",
-                      borderRadius: "8px",
-                      boxShadow: "0 0 10px rgba(0, 255, 0, 0.5)",
-                      zIndex: 10,
-                      pointerEvents: "none",
-                    }}
-                  />
-                ))}
-              </div>
-           
+              ))}
+            </div>
           </div>
-
-       
         </div>
 
         <div className="flex flex-col items-center justify-center gap-10">
           {speechStatus == "started" && <Text />}
 
           <AudioLines
-            className={`${
-              `${
-                    isProcessing> 0 && "animate-ping text-red-500"
-                  }`
-            } w-10 h-10`}
+           className= {`w-10 h-10 text-info ${
+                    isAiTalking > 0 && "animate-ping text-red-500"
+                  }`}
           />
-           
+          {isProcessing && <p>Processing ...</p>}
         </div>
       </div>
 
