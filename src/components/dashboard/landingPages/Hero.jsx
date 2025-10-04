@@ -4,7 +4,7 @@ import { ChevronRightIcon } from '@heroicons/react/24/solid';
 
 const slides = [
   {
-    title: "Hiretrust finds jobs",
+    title: "ItuzeHire finds jobs",
     subtitle: "that work for you",
     description: "Create a free profile to access hundreds of jobs",
     button: "Sign up today →"

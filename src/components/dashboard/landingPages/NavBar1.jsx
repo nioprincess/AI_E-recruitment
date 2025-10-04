@@ -30,9 +30,14 @@ const Navbar1 = () => {
     <nav className="bg-white mb-12 dark:bg-black-100 text-black dark:text-white px-6 py-3 shadow-md fixed w-full z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
-        <div className="text-2xl font-bold">
-          <a href="/" className="no-underline">HireTrust</a>
-        </div>
+       <div className="text-2xl font-extrabold tracking-wide">
+  <a 
+    href="/" 
+    className="no-underline text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-400 hover:opacity-90 transition duration-300"
+  >
+    Ituze<span className="text-gray-800 dark:text-gray-100">Hire</span>
+  </a>
+</div>
 
         {/* Desktop menu */}
         <div className="hidden md:flex items-center gap-6 text-sm">

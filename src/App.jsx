@@ -36,6 +36,7 @@ import DashboardOverview from "./components/recruiterDashboard/components/Dashbo
 import JobManagement from "./components/recruiterDashboard/components/JobManagement";
 import ApplicationsManagement from "./components/recruiterDashboard/components/Applications";
 import ExamManagement from "./components/recruiterDashboard/components/ExamManagement";
+import ExamResults from "./components/recruiterDashboard/components/ExamResult";
 import RecruiterProfile from "./components/recruiterDashboard/components/RecruiterProfile";
 import RecruiterReports from "./components/recruiterDashboard/components/Reports";
 
@@ -135,6 +136,7 @@ const AppRoutes = () => {
         <Route path="/recruiter/jobs" element={<DashboardLayout><JobManagement /></DashboardLayout>}/>
         <Route path="/recruiter/applications" element={<DashboardLayout><ApplicationsManagement /></DashboardLayout>}/>
         <Route path="/recruiter/exams" element={<DashboardLayout><ExamManagement /></DashboardLayout>}/>
+        <Route path="/recruiter/result" element={<DashboardLayout><ExamResults /></DashboardLayout>}/>
         <Route path="/recruiter/profile" element={<DashboardLayout><RecruiterProfile /></DashboardLayout>}/>
         <Route path="/recruiter/reports" element={<DashboardLayout><RecruiterReports /></DashboardLayout>}/>
 
